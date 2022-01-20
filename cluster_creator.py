@@ -36,6 +36,39 @@ class ClusterCreator:
         self.optional_clusters = []
         self.create_optional_clusters(x_start, z_start, width, height, window_width, window_height, shift_size)
 
+    def create_optional_clusters(self, x_start, z_start, width, height, window_width, window_height, shift_size):
+        num_of_windows_horizontal = width / shift_size
+        num_of_windows_vertical = height / shift_size
+        current_z = z_start
+        for i in range (math.ceil(num_of_windows_vertical)):
+            current_x = x_start
+            for i in range (math.ceil(num_of_windows_horizontal)):
+                if current_x + window_width > width or current_z + window_height > height:
+                    continue
+                current_width = min(window_width, width - current_x)
+                current_height = min(window_height, height - current_z)
+                window = Cluster(current_x, current_z, current_width, current_height)
+                self.optional_clusters.append(window)
+                current_x += shift_size
+            current_z += shift_size
+
+    def fill_optional_clusters(self, targets):
+        for cluster in self.optional_clusters:
+            for target in targets:
+                if cluster.is_target_in_range(target[0], target[1]):
+                    cluster.add_target(target)
+
+    def get_cluster_by_target_list(self, target_list):
+        splitted_items = []
+        for item in target_list:
+            item = item.split(" ")
+            splitted_items.append([float(item[0]), float(item[1]), float(item[2])])
+        for cluster in self.optional_clusters:
+            current_target_list = cluster.get_target_list()
+            if splitted_items == current_target_list:
+                return cluster
+        return None
+
     def get_subsets(self):
         return self.optional_clusters
 
@@ -60,44 +93,6 @@ class ClusterCreator:
             cover.append(subset)
             covered |= set(subset)
         return cover
-
-    def create_optional_clusters(self, x_start, z_start, width, height, window_width, window_height, shift_size):
-        num_of_windows_horizontal = width / shift_size
-        num_of_windows_vertical = height / shift_size
-        current_z = z_start
-        for i in range (math.ceil(num_of_windows_vertical)):
-            current_x = x_start
-            for i in range (math.ceil(num_of_windows_horizontal)):
-                if current_x + window_width > width or current_z + window_height > height:
-                    continue
-                current_width = min(window_width, width - current_x)
-                current_height = min(window_height, height - current_z)
-                window = Cluster(current_x, current_z, current_width, current_height)
-                self.optional_clusters.append(window)
-                current_x += shift_size
-            current_z += shift_size
-
-    def fill_optional_clusters(self, targets):
-        for cluster in self.optional_clusters:
-            for target in targets:
-                if cluster.is_target_in_range(target[0], target[1]):
-                    cluster.add_target(target)
-        unempty_clusters = []
-        for cluster in self.optional_clusters:
-            if len(cluster.get_target_list()) != 0:
-                unempty_clusters.append(cluster)
-        self.optional_clusters = unempty_clusters
-
-    def get_cluster_by_target_list(self, target_list):
-        splitted_items = []
-        for item in target_list:
-            item = item.split(" ")
-            splitted_items.append([float(item[0]), float(item[1]), float(item[2])])
-        for cluster in self.optional_clusters:
-            current_target_list = cluster.get_target_list()
-            if splitted_items == current_target_list:
-                return cluster
-        return None
 
     # select the clusters using the set cover greedy approximation algorithm.
     def select_clusters(self):
