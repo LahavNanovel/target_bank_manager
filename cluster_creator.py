@@ -2,7 +2,7 @@ import math
 
 
 class Cluster:
-    def __init__(self, x_start, z_start, width, height):
+    def __init__(self, z_start, x_start, width, height):
         self.x_start = x_start
         self.z_start = z_start
         self.width = width
@@ -21,12 +21,12 @@ class Cluster:
         t = self.targets[0][2]
         for target in self.targets:
             t = min(t, target[2])
-        return (x, z, t)
+        return (z, x, t)
 
-    def is_target_in_range(self, target_x, target_z):
-        if target_x < self.x_start or target_x > self.x_start + self.width:
-            return False
+    def is_target_in_range(self, target_z, target_x):
         if target_z < self.z_start or target_z > self.z_start + self.height:
+            return False
+        if target_x < self.x_start or target_x > self.x_start + self.width:
             return False
         return True
 
@@ -47,7 +47,7 @@ class ClusterCreator:
                     continue
                 current_width = min(window_width, width - current_x)
                 current_height = min(window_height, height - current_z)
-                window = Cluster(current_x, current_z, current_width, current_height)
+                window = Cluster(current_z, current_x, current_width, current_height)
                 self.optional_clusters.append(window)
                 current_x += shift_size
             current_z += shift_size

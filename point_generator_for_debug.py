@@ -11,5 +11,5 @@ def generate_points(ranges):
             x = float(random.randint(x_start, x_end))
             z = float(random.randint(z_start, z_end))
             t = float(random.randint(0, 500))
-            targets.append([x, z, t])
+            targets.append([z, x, t])
     return targets

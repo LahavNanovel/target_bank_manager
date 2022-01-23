@@ -58,7 +58,7 @@ class Visualizer:
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
                 continue
             # normalize coordinates
-            sphere = Sphere(c[0]/REF, c[1]/REF, c[2]/REF, color, ORANGE_RADIUS/REF)
+            sphere = Sphere(c[1]/REF, c[0]/REF, c[2]/REF, color, ORANGE_RADIUS/REF)
             self.spheres.append(sphere)
 
     def import_spheres_from_file(self, file_path, color=ORANGE_COLOR):
@@ -71,13 +71,13 @@ class Visualizer:
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
                 continue
             # normalize coordinates
-            sphere = Sphere(c[0]/REF, c[1]/REF, c[2]/REF, color, ORANGE_RADIUS/REF)
+            sphere = Sphere(c[1]/REF, c[0]/REF, c[2]/REF, color, ORANGE_RADIUS/REF)
             self.spheres.append(sphere)
 
     def import_path_from_array(self, order):
         self.order = []
         for point in order:
-            self.order.append([point[0]/REF, point[1]/REF, point[2]/REF])
+            self.order.append([point[1]/REF, point[0]/REF, point[2]/REF])
 
     def is_point_in_range(self, point):
         if point < REF_LOW or point > REF_HIGH:

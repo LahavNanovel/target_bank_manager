@@ -57,20 +57,18 @@ class TargetBankManager:
         self.visualizer.finished_updating()
 
     def get_next_cluster(self):
-        pass
+        return self.clusters.pop(0)
 
     def get_number_of_clusters(self):
-        pass
+        return len(self.clusters)
 
 
 def singleton(class_):
     instances = {}
-
     def getinstance(*args, **kwargs):
         if class_ not in instances:
             instances[class_] = class_(*args, **kwargs)
         return instances[class_]
-
     return getinstance
 
 @singleton
