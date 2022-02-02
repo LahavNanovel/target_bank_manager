@@ -4,6 +4,9 @@ class PathSolver:
     def __init__(self):
         self.coordinates = []
 
+    def clear_clusters(self):
+        self.coordinates = []
+
     def update_clusters(self, clusters):
         for cluster in clusters:
             coordinate = cluster.get_position()

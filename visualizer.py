@@ -58,7 +58,7 @@ class Visualizer:
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
                 continue
             # normalize coordinates
-            sphere = Sphere(c[1]/REF, c[0]/REF, c[2]/REF, color, ORANGE_RADIUS/REF)
+            sphere = Sphere(c[1] / self.z_ref, c[0] / self.x_ref, c[2] / self.t_ref, color, ORANGE_RADIUS / self.x_ref)
             self.spheres.append(sphere)
 
     def import_spheres_from_file(self, file_path, color=ORANGE_COLOR):
@@ -71,16 +71,16 @@ class Visualizer:
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
                 continue
             # normalize coordinates
-            sphere = Sphere(c[1]/REF, c[0]/REF, c[2]/REF, color, ORANGE_RADIUS/REF)
+            sphere = Sphere(c[1] / self.z_ref, c[0] / self.x_ref, c[2] / self.t_ref, color, ORANGE_RADIUS / self.x_ref)
             self.spheres.append(sphere)
 
     def import_path_from_array(self, order):
         self.order = []
         for point in order:
-            self.order.append([point[1]/REF, point[0]/REF, point[2]/REF])
+            self.order.append([point[1] / self.z_ref, point[0] / self.x_ref, point[2] / self.t_ref])
 
     def is_point_in_range(self, point):
-        if point < REF_LOW or point > REF_HIGH:
+        if point < -2000 or point > 5000:
             return False
         return True
 
@@ -131,3 +131,8 @@ class Visualizer:
         # release the activate thread event to run the visualizer 
         # this operation will cause blocking of the main thread (meaning that updates will no longer be possible)
         self.e.set()
+
+    def set_ref(self, z_ref, x_ref, t_ref):
+        self.z_ref = z_ref
+        self.x_ref = x_ref
+        self.t_ref = t_ref
