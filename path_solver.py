@@ -43,3 +43,15 @@ class PathSolver:
             order.append(new_point)
             remaining_points.remove(new_point)
         return order
+
+    def bottom_to_top(self):
+        order = sorted(self.coordinates, key=lambda k: [k[0], k[1], k[2]])
+        return order
+
+    def get_path(self, method):
+        order = []
+        if method == "bottom_to_top":
+            order = self.bottom_to_top()
+        elif method == "nearest_neighbor":
+            order = self.nearest_neighbor()
+        return order

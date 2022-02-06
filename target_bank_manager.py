@@ -68,7 +68,7 @@ class TargetBankManager:
             self.visualizer.import_spheres_from_array(targets, self.visualizer.colors[i])
             i += 1
         # path
-        order = self.path_solver.nearest_neighbor()
+        order = self.path_solver.get_path(method="bottom_to_top")
         self.visualizer.import_path_from_array(order)
         self.visualizer.finished_updating()
 

@@ -111,11 +111,12 @@ class Visualizer:
         # waits until a signal is given
         self.e.wait()
         self.load_viewpoint()
-        # before vis.run() it's not possible to change the display, after vis.run() it's not possible to update the viewed elements
+        # before vis.run() it's not possible to change the display,
+        # after vis.run() it's not possible to update the viewed elements
         self.vis.run()
         self.vis.destroy_window()
         # uncomment to save new viewpoint
-        # self.save_viewpoint()
+        self.save_viewpoint()
 
     def finished_updating(self):
         # draw the coordinate axis.
@@ -136,3 +137,11 @@ class Visualizer:
         self.z_ref = z_ref
         self.x_ref = x_ref
         self.t_ref = t_ref
+
+    # def add_element(self, element):
+    #     self.activation_thread = threading.Thread(target=self.activate_add_element, args=[element])
+    #     self.activation_thread.start()
+    #
+    # def add_line(self, element):
+    #     self.activation_thread = threading.Thread(target=self.activate_add_line, args=[element])
+    #     self.activation_thread.start()

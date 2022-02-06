@@ -18,4 +18,3 @@ if __name__ == "__main__":
     targets_2 = generate_points([range_3, range_4])
     getTargetBankManager().update_targets(targets_2)
     getTargetBankManager().visualize()
-
