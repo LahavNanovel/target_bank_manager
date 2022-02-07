@@ -48,29 +48,27 @@ class TargetBankManager:
         #     if self.is_point_in_range(point, z_offset, x_offset, t_offset):
         #         in_range.append(point)
         # return in_range
-        pass
-
-    def clear_targets(self):
-        self.cluster_creator.clear_targets()
-        self.clusters = []
-        self.path_solver.clear_clusters()
+        return points
 
     def update_targets(self, targets):
-        self.cluster_creator.fill_optional_clusters(targets)
+        targets = self.filter_out_of_range_points(targets)
+        self.cluster_creator.set_targets(targets)
         self.clusters = self.cluster_creator.select_clusters()
-        self.path_solver.update_clusters(self.clusters)
+        order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
+        self.visualizer.set_path(order)
 
-    # Todo: split the visual data / visual view and remove the view from the bank package
+    def get_number_of_targets(self):
+        targets = []
+        for cluster in self.clusters:
+            targets.extend(cluster.get_target_list())
+        return len(set(targets))
+
     def visualize(self):
         i = 0
         for cluster in self.clusters:
             targets = cluster.get_target_list()
-            self.visualizer.import_spheres_from_array(targets, self.visualizer.colors[i])
+            self.visualizer.set_spheres(targets, self.visualizer.colors[i])
             i += 1
-        # path
-        order = self.path_solver.get_path(method="bottom_to_top")
-        self.visualizer.import_path_from_array(order)
-        self.visualizer.finished_updating()
 
     def get_next_cluster(self):
         self.active_cluster = self.clusters.pop(0)

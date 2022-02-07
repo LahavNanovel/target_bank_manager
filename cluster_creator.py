@@ -61,7 +61,8 @@ class ClusterCreator:
                 current_x += self.shift_size
             current_z += self.shift_size
 
-    def fill_optional_clusters(self, targets):
+    def set_targets(self, targets):
+        self.reset()
         for cluster in self.optional_clusters:
             for target in targets:
                 if cluster.is_target_in_range(target[0], target[1]):
@@ -120,7 +121,7 @@ class ClusterCreator:
             clusters.append(cluster)
         return clusters
 
-    def clear_targets(self):
+    def reset(self):
         self.targets = []
         self.optional_clusters = []
         self.create_optional_clusters()

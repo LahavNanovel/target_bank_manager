@@ -1,14 +1,15 @@
 import time
 import math
+import queue
 import threading
 import open3d as o3d
 from constants import *
 
 
 class Sphere:
-    def __init__(self, x, z, t, color, radius):
-        self.xPos   = x
+    def __init__(self, z, x, t, color, radius):
         self.zPos   = z
+        self.xPos   = x
         self.tPos   = t
         self.radius = radius
         self.color  = color
@@ -44,40 +45,49 @@ class Visualizer:
     colors = [ORANGE_COLOR, GREEN_COLOR, YELLOW_COLOR, RED_COLOR, PURPLE_COLOR, BLUE_COLOR, BLACK_COLOR]
 
     def __init__(self):
-        self.spheres = []
-        self.vis = o3d.visualization.Visualizer()
-        self.vis.create_window(window_name="x: red | z: green | t: blue")
-        # activate window in another thread and wait for signal (after update is finished) to hit window.run()
-        self.e = threading.Event()
-        self.activation_thread = threading.Thread(target=self.activate_window)
+        self.displayed_geometries = []
+        self.display_requests = queue.Queue()
+        self.is_active = True
+        self.activation_thread = threading.Thread(target=self.create_window)
         self.activation_thread.start()
 
-    def import_spheres_from_array(self, coordinates, color=ORANGE_COLOR):
+    def create_window(self):
+        self.vis = o3d.visualization.Visualizer()
+        self.vis.create_window(window_name="x: red | z: green | t: blue")
+        axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08, origin=[0, 0, 0])
+        self.add_element(axis)
+        while self.is_active:
+            while not self.display_requests.empty():
+                self.vis.clear_geometries()
+                geometry = self.display_requests.get()
+                self.displayed_geometries.append(geometry)
+                for geometry in self.displayed_geometries:
+                    self.vis.add_geometry(geometry)
+                    self.vis.update_geometry(geometry)
+            self.vis.poll_events()
+            self.vis.update_renderer()
+        self.vis.destroy_window()
+
+    def set_spheres(self, coordinates, color=ORANGE_COLOR):
         for c in coordinates:
-            # check if coordinates are in range [-2000, 5000]
+            # check if coordinates are in axis range.
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
                 continue
-            # normalize coordinates
-            sphere = Sphere(c[1] / self.z_ref, c[0] / self.x_ref, c[2] / self.t_ref, color, ORANGE_RADIUS / self.x_ref)
-            self.spheres.append(sphere)
+            # normalize coordinates.
+            sphere = Sphere(c[0] / self.z_ref, c[1] / self.x_ref, c[2] / self.t_ref, color, ORANGE_RADIUS / self.x_ref)
+            self.add_element(sphere.get_mesh_sphere())
 
-    def import_spheres_from_file(self, file_path, color=ORANGE_COLOR):
-        f = open(file_path, 'r')
-        lines = f.readlines()
-        for line in lines:
-            c = line.split(" ")
-            c = [int(float(element)) for element in c]
-            # check if coordinates are in range [-2000, 5000]
-            if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
-                continue
-            # normalize coordinates
-            sphere = Sphere(c[1] / self.z_ref, c[0] / self.x_ref, c[2] / self.t_ref, color, ORANGE_RADIUS / self.x_ref)
-            self.spheres.append(sphere)
-
-    def import_path_from_array(self, order):
-        self.order = []
+    def set_path(self, order):
+        normalized_order = []
         for point in order:
-            self.order.append([point[1] / self.z_ref, point[0] / self.x_ref, point[2] / self.t_ref])
+            normalized_order.append([point[1] / self.z_ref, point[0] / self.x_ref, point[2] / self.t_ref])
+        for i in range(len(normalized_order) - 1):
+            self.add_line(normalized_order[i], normalized_order[i + 1])
+
+    def set_ref(self, z_ref, x_ref, t_ref):
+        self.z_ref = z_ref
+        self.x_ref = x_ref
+        self.t_ref = t_ref
 
     def is_point_in_range(self, point):
         if point < -2000 or point > 5000:
@@ -85,10 +95,7 @@ class Visualizer:
         return True
 
     def add_element(self, element):
-        self.vis.add_geometry(element)
-        self.vis.update_geometry(element)
-        self.vis.update_renderer()
-        self.vis.poll_events()
+        self.display_requests.put(element)
 
     def add_line(self, source, destination, color=BLACK_COLOR):
         line_set = o3d.geometry.LineSet()
@@ -105,43 +112,5 @@ class Visualizer:
     def save_viewpoint(self):
         param = self.vis.get_view_control().convert_to_pinhole_camera_parameters()
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
-        self.vis.destroy_window()
+        # self.vis.destroy_window()
 
-    def activate_window(self):  
-        # waits until a signal is given
-        self.e.wait()
-        self.load_viewpoint()
-        # before vis.run() it's not possible to change the display,
-        # after vis.run() it's not possible to update the viewed elements
-        self.vis.run()
-        self.vis.destroy_window()
-        # uncomment to save new viewpoint
-        self.save_viewpoint()
-
-    def finished_updating(self):
-        # draw the coordinate axis.
-        axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08, origin=[0, 0, 0])
-        self.add_element(axis)
-        # draw all spheres
-        for sphere in self.spheres:
-            self.add_element(sphere.get_mesh_sphere())
-        # draw all lines of path.
-        for i in range (len(self.order) - 1):
-            self.add_line(self.order[i], self.order[i + 1])
-            time.sleep(0.15)
-        # release the activate thread event to run the visualizer 
-        # this operation will cause blocking of the main thread (meaning that updates will no longer be possible)
-        self.e.set()
-
-    def set_ref(self, z_ref, x_ref, t_ref):
-        self.z_ref = z_ref
-        self.x_ref = x_ref
-        self.t_ref = t_ref
-
-    # def add_element(self, element):
-    #     self.activation_thread = threading.Thread(target=self.activate_add_element, args=[element])
-    #     self.activation_thread.start()
-    #
-    # def add_line(self, element):
-    #     self.activation_thread = threading.Thread(target=self.activate_add_line, args=[element])
-    #     self.activation_thread.start()
