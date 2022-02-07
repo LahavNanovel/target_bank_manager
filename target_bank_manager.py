@@ -55,6 +55,11 @@ class TargetBankManager:
         self.cluster_creator.set_targets(targets)
         self.clusters = self.cluster_creator.select_clusters()
         order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
+        i = 0
+        for cluster in self.clusters:
+            targets = cluster.get_target_list()
+            self.visualizer.set_spheres(targets, self.visualizer.colors[i])
+            i += 1
         self.visualizer.set_path(order)
 
     def get_number_of_targets(self):
@@ -62,13 +67,6 @@ class TargetBankManager:
         for cluster in self.clusters:
             targets.extend(cluster.get_target_list())
         return len(set(targets))
-
-    def visualize(self):
-        i = 0
-        for cluster in self.clusters:
-            targets = cluster.get_target_list()
-            self.visualizer.set_spheres(targets, self.visualizer.colors[i])
-            i += 1
 
     def get_next_cluster(self):
         self.active_cluster = self.clusters.pop(0)

@@ -54,21 +54,31 @@ class Visualizer:
     def create_window(self):
         self.vis = o3d.visualization.Visualizer()
         self.vis.create_window(window_name="x: red | z: green | t: blue")
-        axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08, origin=[0, 0, 0])
-        self.add_element(axis)
+        self.axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08, origin=[0, 0, 0])
+        self.vis.add_geometry(self.axis)
         while self.is_active:
             while not self.display_requests.empty():
                 self.vis.clear_geometries()
+                self.vis.add_geometry(self.axis)
+                self.vis.poll_events()
+                self.vis.update_renderer()
                 geometry = self.display_requests.get()
                 self.displayed_geometries.append(geometry)
+                self.vis.poll_events()
+                self.vis.update_renderer()
                 for geometry in self.displayed_geometries:
                     self.vis.add_geometry(geometry)
-                    self.vis.update_geometry(geometry)
             self.vis.poll_events()
             self.vis.update_renderer()
         self.vis.destroy_window()
 
+    def clear(self):
+        self.displayed_geometries = []
+        self.vis.clear_geometries()
+        self.vis.add_geometry(self.axis)
+
     def set_spheres(self, coordinates, color=ORANGE_COLOR):
+        self.clear()
         for c in coordinates:
             # check if coordinates are in axis range.
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):

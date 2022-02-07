@@ -32,4 +32,3 @@ if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
     insert_thread = threading.Thread(target=insert_targets)
     insert_thread.run()
-    getTargetBankManager().visualize()
