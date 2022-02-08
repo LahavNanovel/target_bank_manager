@@ -42,8 +42,6 @@ class Sphere:
 
 
 class Visualizer:
-    colors = [ORANGE_COLOR, GREEN_COLOR, YELLOW_COLOR, RED_COLOR, PURPLE_COLOR, BLUE_COLOR, BLACK_COLOR]
-
     def __init__(self):
         self.displayed_geometries = []
         self.display_requests = queue.Queue()
@@ -124,3 +122,20 @@ class Visualizer:
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
         # self.vis.destroy_window()
 
+    def get_element_by_coordinates(self, z, x, t):
+        for element in self.displayed_geometries:
+            center = element.get_center()
+            if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
+                return element
+        return None
+
+    def mark_as_visited(self, coordinates):
+        z = coordinates[0] / self.z_ref
+        x = coordinates[1] / self.x_ref
+        t = coordinates[2] / self.t_ref
+        geometry = self.get_element_by_coordinates(z, x , t)
+        geometry.paint_uniform_color(BLACK_COLOR)
+        # self.vis.remove_geometry(geometry)
+        self.vis.update_geometry(geometry)
+        # self.vis.poll_events()
+        # self.vis.update_renderer()

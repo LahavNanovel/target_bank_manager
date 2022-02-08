@@ -10,7 +10,8 @@ from visualizer import Visualizer
 
 class TargetBankManager:
     def __init__(self):
-        self.cluster_creator = ClusterCreator(window_width=RS_WIDTH, window_height=RS_HEIGHT,
+        self.cluster_creator = ClusterCreator(window_width=RS_WIDTH,
+                                              window_height=RS_HEIGHT,
                                               shift_size=SHIFT_SIZE)
         self.path_solver = PathSolver()
         self.visualizer = Visualizer()
@@ -37,7 +38,6 @@ class TargetBankManager:
             return False
         return True
 
-    # Todo:
     def filter_out_of_range_points(self, points):
         # in_range = []
         # for point in points:
@@ -50,7 +50,7 @@ class TargetBankManager:
         # return in_range
         return points
 
-    def update_targets(self, targets):
+    def set_targets(self, targets):
         targets = self.filter_out_of_range_points(targets)
         self.cluster_creator.set_targets(targets)
         self.clusters = self.cluster_creator.select_clusters()
@@ -58,7 +58,7 @@ class TargetBankManager:
         i = 0
         for cluster in self.clusters:
             targets = cluster.get_target_list()
-            self.visualizer.set_spheres(targets, self.visualizer.colors[i])
+            self.visualizer.set_spheres(targets, colors[i])
             i += 1
         self.visualizer.set_path(order)
 
@@ -78,6 +78,8 @@ class TargetBankManager:
     def get_number_of_clusters(self):
         return len(self.clusters)
 
+    def mark_orange(self, coordinates):
+        self.visualizer.mark_as_visited(coordinates)
 
 def singleton(class_):
     instances = {}
