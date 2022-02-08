@@ -59,8 +59,12 @@ class TargetBankManager:
         for cluster in self.clusters:
             targets = cluster.get_target_list()
             self.visualizer.set_spheres(targets, colors[i])
+            self.visualizer.set_bounding_box(cluster.get_x_start(),
+                                             cluster.get_z_start(),
+                                             cluster.get_min_t(),
+                                             cluster.get_max_t())
             i += 1
-        self.visualizer.set_path(order)
+        # self.visualizer.set_path(order)
 
     def get_number_of_targets(self):
         targets = []

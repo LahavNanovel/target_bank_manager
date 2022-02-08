@@ -92,6 +92,47 @@ class Visualizer:
         for i in range(len(normalized_order) - 1):
             self.add_line(normalized_order[i], normalized_order[i + 1])
 
+    def set_bounding_box(self, x_start, z_start, t_min, t_max):
+        x_start = x_start / self.x_ref
+        z_start = z_start / self.z_ref
+        t_min = t_min / self.t_ref
+        t_max = t_max / self.t_ref
+        window_width = RS_WIDTH / self.x_ref
+        window_height = RS_HEIGHT / self.z_ref
+        edge = ORANGE_RADIUS / self.x_ref
+
+        # p1 = [z_start, x_start, t_min]
+        # p2 = [z_start, x_start + window_width, t_min]
+        # p3 = [z_start + window_height, x_start, t_min]
+        # p4 = [z_start + window_height, x_start + window_width, t_min]
+        # p5 = [z_start, x_start, t_max ]
+        # p6 = [z_start, x_start + window_width, t_max]
+        # p7 = [z_start + window_height, x_start, t_max]
+        # p8 = [z_start + window_height, x_start + window_width, t_max]
+
+        p1 = [x_start - edge, z_start - edge, t_min - edge]
+        p2 = [x_start + window_width + edge, z_start - edge, t_min - edge]
+        p3 = [x_start - edge, z_start + window_height + edge, t_min - edge]
+        p4 = [x_start + window_width + edge, z_start + window_height + edge, t_min - edge]
+        p5 = [x_start - edge, z_start - edge, t_max+ edge]
+        p6 = [x_start + window_width + edge, z_start - edge, t_max + edge]
+        p7 = [x_start - edge, z_start + window_height + edge, t_max+ edge]
+        p8 = [x_start + window_width + edge, z_start + window_height + edge, t_max+ edge]
+
+
+        self.add_line(p1, p2)
+        self.add_line(p2, p4)
+        self.add_line(p4, p3)
+        self.add_line(p3, p1)
+        self.add_line(p5, p6)
+        self.add_line(p6, p8)
+        self.add_line(p8, p7)
+        self.add_line(p7, p5)
+        self.add_line(p1, p5)
+        self.add_line(p2, p6)
+        self.add_line(p3, p7)
+        self.add_line(p4, p8)
+
     def set_ref(self, z_ref, x_ref, t_ref):
         self.z_ref = z_ref
         self.x_ref = x_ref

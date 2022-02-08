@@ -15,19 +15,21 @@ ranges["x_axis_range"] = -2000, 5000
 ranges["t_axis_range"] = 0, 5000
 
 def insert_targets():
-    targets_1 = generate_points([range_1])
-    getTargetBankManager().set_targets(targets_1)
-    time.sleep(5)
-    getTargetBankManager().mark_orange(targets_1[0])
-    time.sleep(0.5)
-    getTargetBankManager().mark_orange(targets_1[1])
-    time.sleep(0.5)
-    getTargetBankManager().mark_orange(targets_1[2])
-    time.sleep(0.5)
-    getTargetBankManager().mark_orange(targets_1[3])
-    time.sleep(0.5)
-    getTargetBankManager().mark_orange(targets_1[4])
-    time.sleep(0.5)
+    # targets_1 = generate_points([range_1])
+    # getTargetBankManager().set_targets(targets_1)
+
+    # time.sleep(5)
+    # getTargetBankManager().mark_orange(targets_1[0])
+    # time.sleep(0.5)
+    # getTargetBankManager().mark_orange(targets_1[1])
+    # time.sleep(0.5)
+    # getTargetBankManager().mark_orange(targets_1[2])
+    # time.sleep(0.5)
+    # getTargetBankManager().mark_orange(targets_1[3])
+    # time.sleep(0.5)
+    # getTargetBankManager().mark_orange(targets_1[4])
+    # time.sleep(0.5)
+
     # time.sleep(2)
     # targets_2 = generate_points([range_1, range_2])
     # getTargetBankManager().set_targets(targets_2)
@@ -35,8 +37,8 @@ def insert_targets():
     # targets_3 = generate_points([range_1, range_2, range_3])
     # getTargetBankManager().set_targets(targets_3)
     # time.sleep(2)
-    # targets_4 = generate_points([range_1, range_2, range_3, range_4])
-    # getTargetBankManager().set_targets(targets_4)
+    targets_4 = generate_points([range_1, range_2, range_3, range_4])
+    getTargetBankManager().set_targets(targets_4)
 
 
 if __name__ == "__main__":

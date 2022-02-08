@@ -18,10 +18,26 @@ class Cluster:
     def get_position(self):
         z = self.z_start + (self.height / 2)
         x = self.x_start + (self.width / 2)
-        t = self.targets[0][2]
-        for target in self.targets:
-            t = min(t, target[2])
+        t = self.get_min_t
         return (z, x, t)
+
+    def get_min_t(self):
+        min_t = self.targets[0][2]
+        for target in self.targets:
+            min_t = min(min_t, target[2])
+        return min_t
+
+    def get_max_t(self):
+        max_t = self.targets[0][2]
+        for target in self.targets:
+            max_t = max(max_t, target[2])
+        return max_t
+
+    def get_x_start(self):
+        return self.x_start
+
+    def get_z_start(self):
+        return self.z_start
 
     def is_target_in_range(self, target_z, target_x):
         if target_z < self.z_start or target_z > self.z_start + self.height:
