@@ -100,16 +100,7 @@ class Visualizer:
         window_width = RS_WIDTH / self.x_ref
         window_height = RS_HEIGHT / self.z_ref
         edge = ORANGE_RADIUS / self.x_ref
-
-        # p1 = [z_start, x_start, t_min]
-        # p2 = [z_start, x_start + window_width, t_min]
-        # p3 = [z_start + window_height, x_start, t_min]
-        # p4 = [z_start + window_height, x_start + window_width, t_min]
-        # p5 = [z_start, x_start, t_max ]
-        # p6 = [z_start, x_start + window_width, t_max]
-        # p7 = [z_start + window_height, x_start, t_max]
-        # p8 = [z_start + window_height, x_start + window_width, t_max]
-
+        # create points
         p1 = [x_start - edge, z_start - edge, t_min - edge]
         p2 = [x_start + window_width + edge, z_start - edge, t_min - edge]
         p3 = [x_start - edge, z_start + window_height + edge, t_min - edge]
@@ -118,8 +109,7 @@ class Visualizer:
         p6 = [x_start + window_width + edge, z_start - edge, t_max + edge]
         p7 = [x_start - edge, z_start + window_height + edge, t_max+ edge]
         p8 = [x_start + window_width + edge, z_start + window_height + edge, t_max+ edge]
-
-
+        # connect points by lines
         self.add_line(p1, p2)
         self.add_line(p2, p4)
         self.add_line(p4, p3)
@@ -163,20 +153,17 @@ class Visualizer:
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
         # self.vis.destroy_window()
 
-    def get_element_by_coordinates(self, z, x, t):
+    def get_sphere_by_coordinates(self, z, x, t):
         for element in self.displayed_geometries:
             center = element.get_center()
             if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
                 return element
         return None
 
-    def mark_as_visited(self, coordinates):
+    def mark_sphere(self, coordinates, color):
         z = coordinates[0] / self.z_ref
         x = coordinates[1] / self.x_ref
         t = coordinates[2] / self.t_ref
-        geometry = self.get_element_by_coordinates(z, x , t)
-        geometry.paint_uniform_color(BLACK_COLOR)
-        # self.vis.remove_geometry(geometry)
+        geometry = self.get_sphere_by_coordinates(z, x, t)
+        geometry.paint_uniform_color(color)
         self.vis.update_geometry(geometry)
-        # self.vis.poll_events()
-        # self.vis.update_renderer()

@@ -58,7 +58,7 @@ class TargetBankManager:
         i = 0
         for cluster in self.clusters:
             targets = cluster.get_target_list()
-            self.visualizer.set_spheres(targets, colors[i])
+            self.visualizer.set_spheres(targets, WHITE_COLOR)
             self.visualizer.set_bounding_box(cluster.get_x_start(),
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),
@@ -82,8 +82,14 @@ class TargetBankManager:
     def get_number_of_clusters(self):
         return len(self.clusters)
 
-    def mark_orange(self, coordinates):
-        self.visualizer.mark_as_visited(coordinates)
+    def mark_orange(self, coordinates, state):
+        if state == "visited":
+            self.visualizer.mark_sphere(coordinates, ORANGE_COLOR)
+        elif state == "picked":
+            self.visualizer.mark_sphere(coordinates, GREEN_COLOR)
+        else:
+            self.visualizer.mark_sphere(coordinates, RED_COLOR)
+
 
 def singleton(class_):
     instances = {}

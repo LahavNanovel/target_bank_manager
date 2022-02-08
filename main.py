@@ -14,34 +14,56 @@ ranges["z_axis_range"] = -2000, 5000
 ranges["x_axis_range"] = -2000, 5000
 ranges["t_axis_range"] = 0, 5000
 
-def insert_targets():
-    # targets_1 = generate_points([range_1])
-    # getTargetBankManager().set_targets(targets_1)
-
-    # time.sleep(5)
-    # getTargetBankManager().mark_orange(targets_1[0])
-    # time.sleep(0.5)
-    # getTargetBankManager().mark_orange(targets_1[1])
-    # time.sleep(0.5)
-    # getTargetBankManager().mark_orange(targets_1[2])
-    # time.sleep(0.5)
-    # getTargetBankManager().mark_orange(targets_1[3])
-    # time.sleep(0.5)
-    # getTargetBankManager().mark_orange(targets_1[4])
-    # time.sleep(0.5)
-
-    # time.sleep(2)
-    # targets_2 = generate_points([range_1, range_2])
-    # getTargetBankManager().set_targets(targets_2)
-    # time.sleep(2)
-    # targets_3 = generate_points([range_1, range_2, range_3])
-    # getTargetBankManager().set_targets(targets_3)
-    # time.sleep(2)
+# add clusters gradually
+def test_1():
+    targets_1 = generate_points([range_1])
+    getTargetBankManager().set_targets(targets_1)
+    time.sleep(2)
+    targets_2 = generate_points([range_1, range_2])
+    getTargetBankManager().set_targets(targets_2)
+    time.sleep(2)
+    targets_3 = generate_points([range_1, range_2, range_3])
+    getTargetBankManager().set_targets(targets_3)
+    time.sleep(2)
     targets_4 = generate_points([range_1, range_2, range_3, range_4])
     getTargetBankManager().set_targets(targets_4)
+
+# add clusters at once and mark targets.
+def test_2():
+    targets_1 = generate_points([range_1])
+    targets_2 = generate_points([range_2])
+    targets_3 = generate_points([range_3])
+    targets_4 = generate_points([range_4])
+    targets = targets_1 + targets_2 + targets_3 + targets_4
+    getTargetBankManager().set_targets(targets)
+    targets_1 = sorted(targets_1, key=lambda k: [k[2]])
+    targets_2 = sorted(targets_2, key=lambda k: [k[2]])
+    targets_3 = sorted(targets_3, key=lambda k: [k[2]])
+    targets_4 = sorted(targets_4, key=lambda k: [k[2]])
+    time.sleep(5)
+    getTargetBankManager().mark_orange(targets_1[0], "visited")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_1[0], "picked")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_1[1], "visited")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_1[1], "failed")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_2[0], "visited")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_2[0], "picked")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_3[0], "visited")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_3[0], "picked")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_4[0], "visited")
+    time.sleep(2)
+    getTargetBankManager().mark_orange(targets_4[0], "picked")
+
 
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
-    insert_thread = threading.Thread(target=insert_targets)
+    insert_thread = threading.Thread(target=test_2)
     insert_thread.run()
