@@ -54,8 +54,6 @@ class TargetBankManager:
         targets = self.filter_out_of_range_points(targets)
         self.cluster_creator.set_targets(targets)
         self.clusters = self.cluster_creator.select_clusters()
-        order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
-        i = 0
         for cluster in self.clusters:
             targets = cluster.get_target_list()
             self.visualizer.set_spheres(targets, WHITE_COLOR)
@@ -63,14 +61,15 @@ class TargetBankManager:
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),
                                              cluster.get_max_t())
-            i += 1
+        # order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
         # self.visualizer.set_path(order)
 
     def get_number_of_targets(self):
+        # TODO: remove duplicates to return the correct number.
         targets = []
         for cluster in self.clusters:
             targets.extend(cluster.get_target_list())
-        return len(set(targets))
+        return len(targets)
 
     def get_next_cluster(self):
         self.active_cluster = self.clusters.pop(0)
@@ -82,7 +81,7 @@ class TargetBankManager:
     def get_number_of_clusters(self):
         return len(self.clusters)
 
-    def mark_orange(self, coordinates, state):
+    def mark_target(self, coordinates, state):
         if state == "visited":
             self.visualizer.mark_sphere(coordinates, ORANGE_COLOR)
         elif state == "picked":

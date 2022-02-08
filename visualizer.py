@@ -56,14 +56,10 @@ class Visualizer:
         self.vis.add_geometry(self.axis)
         while self.is_active:
             while not self.display_requests.empty():
-                self.vis.clear_geometries()
                 self.vis.add_geometry(self.axis)
                 self.vis.poll_events()
                 self.vis.update_renderer()
-                geometry = self.display_requests.get()
-                self.displayed_geometries.append(geometry)
-                self.vis.poll_events()
-                self.vis.update_renderer()
+                self.displayed_geometries.append(self.display_requests.get())
                 for geometry in self.displayed_geometries:
                     self.vis.add_geometry(geometry)
             self.vis.poll_events()
@@ -76,7 +72,6 @@ class Visualizer:
         self.vis.add_geometry(self.axis)
 
     def set_spheres(self, coordinates, color=ORANGE_COLOR):
-        self.clear()
         for c in coordinates:
             # check if coordinates are in axis range.
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
@@ -141,6 +136,7 @@ class Visualizer:
         line_set.points = o3d.utility.Vector3dVector([source, destination])
         line_set.lines = o3d.utility.Vector2iVector([[0, 1]])
         line_set.colors = o3d.utility.Vector3dVector([color])
+        # print(line_set.get_line_coordinate(0))
         self.add_element(line_set)
 
     def load_viewpoint(self):

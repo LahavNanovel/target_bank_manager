@@ -4,8 +4,8 @@ import threading
 from point_generator_for_debug import generate_points
 from target_bank_manager import getTargetBankManager
 
-range_1 = [[100, 200], [200, 400]]
-range_2 = [[650, 750], [100, 300]]
+range_1 = [[650, 750], [100, 300]]
+range_2 = [[100, 200], [200, 400]]
 range_3 = [[400, 500], [600, 800]]
 range_4 = [[250, 350], [900, 1100]]
 
@@ -34,32 +34,44 @@ def test_2():
     targets_2 = generate_points([range_2])
     targets_3 = generate_points([range_3])
     targets_4 = generate_points([range_4])
-    targets = targets_1 + targets_2 + targets_3 + targets_4
-    getTargetBankManager().set_targets(targets)
     targets_1 = sorted(targets_1, key=lambda k: [k[2]])
     targets_2 = sorted(targets_2, key=lambda k: [k[2]])
     targets_3 = sorted(targets_3, key=lambda k: [k[2]])
     targets_4 = sorted(targets_4, key=lambda k: [k[2]])
-    time.sleep(5)
-    getTargetBankManager().mark_orange(targets_1[0], "visited")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_1[0], "picked")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_1[1], "visited")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_1[1], "failed")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_2[0], "visited")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_2[0], "picked")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_3[0], "visited")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_3[0], "picked")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_4[0], "visited")
-    time.sleep(2)
-    getTargetBankManager().mark_orange(targets_4[0], "picked")
+    targets = targets_1 + targets_2 + targets_3 + targets_4
+    getTargetBankManager().set_targets(targets)
+    time.sleep(10)
+    getTargetBankManager().mark_target(targets_1[0], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_1[0], "picked")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_1[1], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_1[1], "failed")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_2[0], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_2[0], "picked")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_2[1], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_2[1], "picked")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_3[0], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_3[0], "picked")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_3[1], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_3[1], "failed")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_4[0], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_4[0], "picked")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_4[1], "visited")
+    time.sleep(3)
+    getTargetBankManager().mark_target(targets_4[1], "picked")
 
 
 
