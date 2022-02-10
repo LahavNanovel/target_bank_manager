@@ -1,4 +1,3 @@
-import time
 import math
 import queue
 import threading
@@ -158,3 +157,17 @@ class Visualizer:
     def get_line_by_coordinates(self, z, x, t):
         for element in self.displayed_geometries:
             print(element.get_line_coordinate(0))
+
+    def add_sphere(self, coordinates, color):
+        if not self.is_point_in_range(coordinates[0]) or not self.is_point_in_range(coordinates[1]) or \
+                not self.is_point_in_range(coordinates[2]):
+            return
+        # normalize coordinates.
+        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
+        self.add_element(sphere.get_mesh_sphere())
+
+    def remove_sphere(self, coordinates):
+        sphere = self.get_sphere_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
+        self.displayed_geometries.remove(sphere)
+        self.vis.remove_geometry(sphere)
+        self.vis.update_geometry(sphere)

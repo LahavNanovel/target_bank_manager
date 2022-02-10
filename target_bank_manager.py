@@ -86,6 +86,12 @@ class TargetBankManager:
         else:
             self.visualizer.mark_sphere(coordinates, RED_COLOR)
 
+    def add_sphere(self, coordinates, color=WHITE_COLOR):
+        self.visualizer.add_sphere(coordinates, color)
+
+    def remove_sphere(self, coordinates):
+        self.visualizer.remove_sphere(coordinates)
+
 
 def singleton(class_):
     instances = {}
