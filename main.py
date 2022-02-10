@@ -1,7 +1,7 @@
 import time
 import threading
 
-from point_generator_for_debug import generate_points
+from point_generator_for_debug import *
 from target_bank_manager import getTargetBankManager
 
 range_1 = [[650, 750], [100, 300]]
@@ -10,9 +10,9 @@ range_3 = [[400, 500], [600, 800]]
 range_4 = [[250, 350], [900, 1100]]
 
 ranges = {}
-ranges["z_axis_range"] = -2000, 5000
-ranges["x_axis_range"] = -2000, 5000
-ranges["t_axis_range"] = 0, 5000
+ranges["z_axis_range"] = 0, 1800
+ranges["x_axis_range"] = 0, 895
+ranges["t_axis_range"] = 0, 2000
 
 # add clusters gradually
 def test_1():
@@ -73,9 +73,12 @@ def test_2():
     time.sleep(3)
     getTargetBankManager().mark_target(targets_4[1], "picked")
 
-
+# generate points from real detection file
+def test_3():
+    targets = generate_points_from_file()
+    getTargetBankManager().set_targets(targets)
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
-    insert_thread = threading.Thread(target=test_2)
-    insert_thread.run()
+    t = threading.Thread(target=test_3)
+    t.run()

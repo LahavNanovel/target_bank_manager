@@ -13,3 +13,14 @@ def generate_points(ranges):
             t = float(random.randint(0, 500))
             targets.append([z, x, t])
     return targets
+
+def generate_points_from_file():
+    targets = []
+    with open("rm_08_02.txt") as file:
+        for d in file:
+            coordinates = d.split(" ")
+            z = int(coordinates[0])
+            x = int(coordinates[1])
+            t = int(coordinates[2])
+            targets.append([z, x, t])
+    return targets

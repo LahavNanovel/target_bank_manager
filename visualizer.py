@@ -52,7 +52,7 @@ class Visualizer:
     def create_window(self):
         self.vis = o3d.visualization.Visualizer()
         self.vis.create_window(window_name="x: red | z: green | t: blue")
-        self.axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.08, origin=[0, 0, 0])
+        self.axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=500, origin=[0, 0, 0])
         self.vis.add_geometry(self.axis)
         while self.is_active:
             while not self.display_requests.empty():
@@ -77,24 +77,20 @@ class Visualizer:
             if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
                 continue
             # normalize coordinates.
-            sphere = Sphere(c[0] / self.z_ref, c[1] / self.x_ref, c[2] / self.t_ref, color, ORANGE_RADIUS / self.x_ref)
+            sphere = Sphere(c[0], c[1], c[2], color, ORANGE_RADIUS)
             self.add_element(sphere.get_mesh_sphere())
 
     def set_path(self, order):
         normalized_order = []
         for point in order:
-            normalized_order.append([point[1] / self.z_ref, point[0] / self.x_ref, point[2] / self.t_ref])
+            normalized_order.append([point[1], point[0], point[2]])
         for i in range(len(normalized_order) - 1):
             self.add_line(normalized_order[i], normalized_order[i + 1])
 
     def set_bounding_box(self, x_start, z_start, t_min, t_max):
-        x_start = x_start / self.x_ref
-        z_start = z_start / self.z_ref
-        t_min = t_min / self.t_ref
-        t_max = t_max / self.t_ref
-        window_width = RS_WIDTH / self.x_ref
-        window_height = RS_HEIGHT / self.z_ref
-        edge = ORANGE_RADIUS / self.x_ref
+        window_width = RS_WIDTH
+        window_height = RS_HEIGHT
+        edge = ORANGE_RADIUS
         # create points
         p1 = [x_start - edge, z_start - edge, t_min - edge]
         p2 = [x_start + window_width + edge, z_start - edge, t_min - edge]
@@ -117,11 +113,6 @@ class Visualizer:
         self.add_line(p2, p6)
         self.add_line(p3, p7)
         self.add_line(p4, p8)
-
-    def set_ref(self, z_ref, x_ref, t_ref):
-        self.z_ref = z_ref
-        self.x_ref = x_ref
-        self.t_ref = t_ref
 
     def is_point_in_range(self, point):
         if point < -2000 or point > 5000:
@@ -149,6 +140,14 @@ class Visualizer:
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
         # self.vis.destroy_window()
 
+    def mark_sphere(self, coordinates, color):
+        z = coordinates[0]
+        x = coordinates[1]
+        t = coordinates[2]
+        geometry = self.get_sphere_by_coordinates(z, x, t)
+        geometry.paint_uniform_color(color)
+        self.vis.update_geometry(geometry)
+
     def get_sphere_by_coordinates(self, z, x, t):
         for element in self.displayed_geometries:
             center = element.get_center()
@@ -156,10 +155,6 @@ class Visualizer:
                 return element
         return None
 
-    def mark_sphere(self, coordinates, color):
-        z = coordinates[0] / self.z_ref
-        x = coordinates[1] / self.x_ref
-        t = coordinates[2] / self.t_ref
-        geometry = self.get_sphere_by_coordinates(z, x, t)
-        geometry.paint_uniform_color(color)
-        self.vis.update_geometry(geometry)
+    def get_line_by_coordinates(self, z, x, t):
+        for element in self.displayed_geometries:
+            print(element.get_line_coordinate(0))

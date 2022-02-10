@@ -25,9 +25,6 @@ class TargetBankManager:
                                              self.x_start,
                                              abs(self.x_start - self.x_end),
                                              abs(self.z_start - self.z_end))
-        self.visualizer.set_ref(abs(self.z_start - self.z_end),
-                                abs(self.x_start - self.x_end),
-                                abs(self.t_start - self.t_end))
 
     def is_point_in_range(self, point, z_offset, x_offset, t_offset):
         if (point[0] + z_offset) < self.z_start or (point[0] + z_offset) > self.z_end:
