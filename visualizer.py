@@ -72,19 +72,12 @@ class Visualizer:
 
     def set_spheres(self, coordinates, color=ORANGE_COLOR):
         for c in coordinates:
-            # check if coordinates are in axis range.
-            if not self.is_point_in_range(c[0]) or not self.is_point_in_range(c[1]) or not self.is_point_in_range(c[2]):
-                continue
-            # normalize coordinates.
             sphere = Sphere(c[0], c[1], c[2], color, ORANGE_RADIUS)
             self.add_element(sphere.get_mesh_sphere())
 
     def set_path(self, order):
-        normalized_order = []
-        for point in order:
-            normalized_order.append([point[1], point[0], point[2]])
-        for i in range(len(normalized_order) - 1):
-            self.add_line(normalized_order[i], normalized_order[i + 1])
+        for i in range(len(order) - 1):
+            self.add_line(order[i], order[i + 1])
 
     def set_bounding_box(self, x_start, z_start, t_min, t_max):
         window_width = RS_WIDTH
@@ -112,11 +105,6 @@ class Visualizer:
         self.add_line(p2, p6)
         self.add_line(p3, p7)
         self.add_line(p4, p8)
-
-    def is_point_in_range(self, point):
-        if point < -2000 or point > 5000:
-            return False
-        return True
 
     def add_element(self, element):
         self.display_requests.put(element)
@@ -159,10 +147,6 @@ class Visualizer:
             print(element.get_line_coordinate(0))
 
     def add_sphere(self, coordinates, color):
-        if not self.is_point_in_range(coordinates[0]) or not self.is_point_in_range(coordinates[1]) or \
-                not self.is_point_in_range(coordinates[2]):
-            return
-        # normalize coordinates.
         sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
         self.add_element(sphere.get_mesh_sphere())
 

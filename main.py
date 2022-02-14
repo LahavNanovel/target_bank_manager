@@ -11,7 +11,7 @@ range_4 = [[250, 350], [900, 1100]]
 
 ranges = {}
 ranges["z_axis_range"] = 0, 1800
-ranges["x_axis_range"] = 0, 895
+ranges["x_axis_range"] = 0, 1000
 ranges["t_axis_range"] = 0, 2000
 
 # add clusters gradually
@@ -89,5 +89,5 @@ def test_4():
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
-    t = threading.Thread(target=test_4)
+    t = threading.Thread(target=test_3)
     t.run()

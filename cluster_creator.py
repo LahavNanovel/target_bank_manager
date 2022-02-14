@@ -78,7 +78,7 @@ class ClusterCreator:
             current_z += self.shift_size
 
     def set_targets(self, targets):
-        self.reset()
+        # self.reset()
         for cluster in self.optional_clusters:
             for target in targets:
                 if cluster.is_target_in_range(target[0], target[1]):

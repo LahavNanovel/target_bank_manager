@@ -52,8 +52,8 @@ class TargetBankManager:
         self.cluster_creator.set_targets(targets)
         self.clusters = self.cluster_creator.select_clusters()
         for cluster in self.clusters:
-            targets = cluster.get_target_list()
-            self.visualizer.set_spheres(targets, WHITE_COLOR)
+            target_list = cluster.get_target_list()
+            self.visualizer.set_spheres(target_list, WHITE_COLOR)
             self.visualizer.set_bounding_box(cluster.get_x_start(),
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),

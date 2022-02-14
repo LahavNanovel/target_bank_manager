@@ -16,11 +16,14 @@ def generate_points(ranges):
 
 def generate_points_from_file():
     targets = []
-    with open("rm_08_02.txt") as file:
+    z_offset = 53
+    x_offset = -168
+    t_offset = -1641
+    with open("08_02_2022___14_18_12.txt") as file:
         for d in file:
             coordinates = d.split(" ")
-            z = int(coordinates[0])
-            x = int(coordinates[1])
-            t = int(coordinates[2])
+            z = int(coordinates[0]) + z_offset
+            x = int(coordinates[1]) + x_offset
+            t = int(coordinates[2]) + t_offset
             targets.append([z, x, t])
     return targets
