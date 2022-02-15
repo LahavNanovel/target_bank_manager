@@ -12,6 +12,9 @@ class Cluster:
     def add_target(self, target):
         self.targets.append(target)
 
+    def remove_target(self, target):
+        self.targets.remove(target)
+
     def get_target_list(self):
         return self.targets
 

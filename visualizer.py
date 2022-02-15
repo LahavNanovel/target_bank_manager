@@ -1,4 +1,5 @@
 import math
+import json
 import queue
 import threading
 import open3d as o3d
@@ -65,21 +66,30 @@ class Visualizer:
             self.vis.update_renderer()
         self.vis.destroy_window()
 
-    def clear(self):
-        self.displayed_geometries = []
-        self.vis.clear_geometries()
-        self.vis.add_geometry(self.axis)
+    def add_single_sphere(self, coordinates, color):
+        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
+        self.display_requests.put(sphere.get_mesh_sphere())
 
-    def set_spheres(self, coordinates, color=ORANGE_COLOR):
+    def remove_sphere(self, coordinates):
+        sphere = self.get_sphere_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
+        self.displayed_geometries.remove(sphere)
+        self.vis.remove_geometry(sphere)
+        self.vis.update_geometry(sphere)
+
+    # used to add a full cluster of spheres.
+    def update_spheres(self, coordinates, color=ORANGE_COLOR):
         for c in coordinates:
             sphere = Sphere(c[0], c[1], c[2], color, ORANGE_RADIUS)
-            self.add_element(sphere.get_mesh_sphere())
+            self.display_requests.put(sphere.get_mesh_sphere())
 
-    def set_path(self, order):
-        for i in range(len(order) - 1):
-            self.add_line(order[i], order[i + 1])
+    def add_line(self, source, destination, color=BLACK_COLOR):
+        line_set = o3d.geometry.LineSet()
+        line_set.points = o3d.utility.Vector3dVector([source, destination])
+        line_set.lines = o3d.utility.Vector2iVector([[0, 1]])
+        line_set.colors = o3d.utility.Vector3dVector([color])
+        self.display_requests.put(line_set)
 
-    def set_bounding_box(self, x_start, z_start, t_min, t_max):
+    def add_bounding_box(self, x_start, z_start, t_min, t_max):
         window_width = RS_WIDTH
         window_height = RS_HEIGHT
         edge = ORANGE_RADIUS
@@ -106,16 +116,43 @@ class Visualizer:
         self.add_line(p3, p7)
         self.add_line(p4, p8)
 
-    def add_element(self, element):
-        self.display_requests.put(element)
+    def add_path(self, order):
+        for i in range(len(order) - 1):
+            self.add_line(order[i], order[i + 1])
 
-    def add_line(self, source, destination, color=BLACK_COLOR):
-        line_set = o3d.geometry.LineSet()
-        line_set.points = o3d.utility.Vector3dVector([source, destination])
-        line_set.lines = o3d.utility.Vector2iVector([[0, 1]])
-        line_set.colors = o3d.utility.Vector3dVector([color])
-        # print(line_set.get_line_coordinate(0))
-        self.add_element(line_set)
+    def get_sphere_by_coordinates(self, z, x, t):
+        for element in self.displayed_geometries:
+            center = element.get_center()
+            if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
+                return element
+        return None
+
+    def mark_sphere(self, coordinates, color):
+        z = coordinates[0]
+        x = coordinates[1]
+        t = coordinates[2]
+        geometry = self.get_sphere_by_coordinates(z, x, t)
+        geometry.paint_uniform_color(color)
+        self.vis.update_geometry(geometry)
+
+    def get_line_by_coordinates(self, z, x, t):
+        # TODO: complete
+        for element in self.displayed_geometries:
+            print(element.get_line_coordinate(0))
+        pass
+
+    def extract_spheres_from_dict(self, targets_dict):
+        targets = []
+        for id in targets_dict.keys():
+            targets.append(targets_dict[id])
+        self.update_spheres(targets)
+
+    def extract_bounding_box_from_dict(self, bounding_box_dict):
+        x_start = float(bounding_box_dict["x_start"])
+        z_start = float(bounding_box_dict["z_start"])
+        t_min = float(bounding_box_dict["t_min"])
+        t_max = float(bounding_box_dict["t_max"])
+        self.add_bounding_box(x_start, z_start, t_min, t_max)
 
     def load_viewpoint(self):
         ctr = self.vis.get_view_control()
@@ -126,32 +163,3 @@ class Visualizer:
         param = self.vis.get_view_control().convert_to_pinhole_camera_parameters()
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
         # self.vis.destroy_window()
-
-    def mark_sphere(self, coordinates, color):
-        z = coordinates[0]
-        x = coordinates[1]
-        t = coordinates[2]
-        geometry = self.get_sphere_by_coordinates(z, x, t)
-        geometry.paint_uniform_color(color)
-        self.vis.update_geometry(geometry)
-
-    def get_sphere_by_coordinates(self, z, x, t):
-        for element in self.displayed_geometries:
-            center = element.get_center()
-            if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
-                return element
-        return None
-
-    def get_line_by_coordinates(self, z, x, t):
-        for element in self.displayed_geometries:
-            print(element.get_line_coordinate(0))
-
-    def add_sphere(self, coordinates, color):
-        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
-        self.add_element(sphere.get_mesh_sphere())
-
-    def remove_sphere(self, coordinates):
-        sphere = self.get_sphere_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
-        self.displayed_geometries.remove(sphere)
-        self.vis.remove_geometry(sphere)
-        self.vis.update_geometry(sphere)

@@ -53,8 +53,8 @@ class TargetBankManager:
         self.clusters = self.cluster_creator.select_clusters()
         for cluster in self.clusters:
             target_list = cluster.get_target_list()
-            self.visualizer.set_spheres(target_list, WHITE_COLOR)
-            self.visualizer.set_bounding_box(cluster.get_x_start(),
+            self.visualizer.update_spheres(target_list, WHITE_COLOR)
+            self.visualizer.add_bounding_box(cluster.get_x_start(),
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),
                                              cluster.get_max_t())
@@ -86,11 +86,26 @@ class TargetBankManager:
         else:
             self.visualizer.mark_sphere(coordinates, RED_COLOR)
 
-    def add_sphere(self, coordinates, color=WHITE_COLOR):
-        self.visualizer.add_sphere(coordinates, color)
+    def add_target(self, coordinates, color=WHITE_COLOR):
+        for cluster in self.clusters:
+            if cluster.is_target_in_range(coordinates):
+                cluster.add_target(coordinates)
+        self.visualizer.add_single_sphere(coordinates, color)
 
-    def remove_sphere(self, coordinates):
+    def remove_target(self, coordinates):
+        for cluster in self.clusters:
+            if cluster.is_target_in_range(coordinates):
+                cluster.remove_target(coordinates)
         self.visualizer.remove_sphere(coordinates)
+
+    def send_targets_str_to_visualizer(self):
+        for cluster in self.clusters:
+            target_list = cluster.get_target_list()
+            self.visualizer.update_spheres(target_list, WHITE_COLOR)
+            self.visualizer.add_bounding_box(cluster.get_x_start(),
+                                             cluster.get_z_start(),
+                                             cluster.get_min_t(),
+                                             cluster.get_max_t())
 
 
 def singleton(class_):

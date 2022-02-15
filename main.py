@@ -83,9 +83,9 @@ def test_4():
     targets_1 = generate_points([range_1])
     getTargetBankManager().set_targets(targets_1)
     time.sleep(2)
-    getTargetBankManager().add_sphere([300, 400, 500])
+    getTargetBankManager().add_target([300, 400, 500])
     time.sleep(2)
-    getTargetBankManager().remove_sphere([300, 400, 500])
+    getTargetBankManager().remove_target([300, 400, 500])
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
