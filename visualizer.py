@@ -43,9 +43,12 @@ class Sphere:
 
 class Visualizer:
     def __init__(self):
-        self.displayed_geometries = []
-        self.display_requests = queue.Queue()
         self.is_active = True
+        self.displayed_geometries = []
+        self.displayed_spheres = []
+        self.displayed_bounding_boxes = []
+        self.displayed_path = []
+        self.display_requests = queue.Queue()
         self.activation_thread = threading.Thread(target=self.create_window)
         self.activation_thread.start()
 
@@ -56,17 +59,16 @@ class Visualizer:
         self.vis.add_geometry(self.axis)
         while self.is_active:
             while not self.display_requests.empty():
-                self.vis.add_geometry(self.axis)
+                request = self.display_requests.get()
+                self.displayed_geometries.append(request)
+                self.vis.add_geometry(request)
                 self.vis.poll_events()
                 self.vis.update_renderer()
-                self.displayed_geometries.append(self.display_requests.get())
-                for geometry in self.displayed_geometries:
-                    self.vis.add_geometry(geometry)
             self.vis.poll_events()
             self.vis.update_renderer()
         self.vis.destroy_window()
 
-    def add_single_sphere(self, coordinates, color):
+    def add_sphere(self, coordinates, color=WHITE_COLOR):
         sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
         self.display_requests.put(sphere.get_mesh_sphere())
 
@@ -76,11 +78,20 @@ class Visualizer:
         self.vis.remove_geometry(sphere)
         self.vis.update_geometry(sphere)
 
-    # used to add a full cluster of spheres.
-    def update_spheres(self, coordinates, color=ORANGE_COLOR):
-        for c in coordinates:
-            sphere = Sphere(c[0], c[1], c[2], color, ORANGE_RADIUS)
-            self.display_requests.put(sphere.get_mesh_sphere())
+    def get_sphere_by_coordinates(self, z, x, t):
+        for element in self.displayed_geometries:
+            center = element.get_center()
+            if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
+                return element
+        return None
+
+    def mark_sphere(self, coordinates, color):
+        z = coordinates[0]
+        x = coordinates[1]
+        t = coordinates[2]
+        geometry = self.get_sphere_by_coordinates(z, x, t)
+        geometry.paint_uniform_color(color)
+        self.vis.update_geometry(geometry)
 
     def add_line(self, source, destination, color=BLACK_COLOR):
         line_set = o3d.geometry.LineSet()
@@ -123,21 +134,6 @@ class Visualizer:
             p2 = [order[i + 1][1], order[i + 1][0], order[i + 1][2] - edge]
             self.add_line(p1, p2, color=ORANGE_COLOR)
 
-    def get_sphere_by_coordinates(self, z, x, t):
-        for element in self.displayed_geometries:
-            center = element.get_center()
-            if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
-                return element
-        return None
-
-    def mark_sphere(self, coordinates, color):
-        z = coordinates[0]
-        x = coordinates[1]
-        t = coordinates[2]
-        geometry = self.get_sphere_by_coordinates(z, x, t)
-        geometry.paint_uniform_color(color)
-        self.vis.update_geometry(geometry)
-
     def get_line_by_coordinates(self, z, x, t):
         # TODO: complete
         for element in self.displayed_geometries:
@@ -145,10 +141,8 @@ class Visualizer:
         pass
 
     def extract_spheres_from_dict(self, targets_dict):
-        targets = []
         for id in targets_dict.keys():
-            targets.append(targets_dict[id])
-        self.update_spheres(targets)
+            self.add_sphere(targets_dict[id])
 
     def extract_bounding_box_from_dict(self, bounding_box_dict):
         x_start = float(bounding_box_dict["x_start"])

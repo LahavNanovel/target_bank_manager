@@ -53,7 +53,8 @@ class TargetBankManager:
         self.clusters = self.cluster_creator.select_clusters()
         for cluster in self.clusters:
             target_list = cluster.get_target_list()
-            self.visualizer.update_spheres(target_list, WHITE_COLOR)
+            for target in target_list:
+                self.visualizer.add_sphere(target)
             self.visualizer.add_bounding_box(cluster.get_x_start(),
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),
@@ -90,7 +91,7 @@ class TargetBankManager:
         for cluster in self.clusters:
             if cluster.is_target_in_range(coordinates):
                 cluster.add_target(coordinates)
-        self.visualizer.add_single_sphere(coordinates, color)
+        self.visualizer.add_sphere(coordinates, color)
 
     def remove_target(self, coordinates):
         for cluster in self.clusters:
