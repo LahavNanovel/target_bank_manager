@@ -58,8 +58,8 @@ class TargetBankManager:
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),
                                              cluster.get_max_t())
-        # order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
-        # self.visualizer.set_path(order)
+        order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
+        self.visualizer.add_path(order)
 
     def get_number_of_targets(self):
         # TODO: remove duplicates to return the correct number.

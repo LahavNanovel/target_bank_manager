@@ -21,7 +21,7 @@ class Cluster:
     def get_position(self):
         z = self.z_start + (self.height / 2)
         x = self.x_start + (self.width / 2)
-        t = self.get_min_t
+        t = self.get_min_t()
         return (z, x, t)
 
     def get_min_t(self):

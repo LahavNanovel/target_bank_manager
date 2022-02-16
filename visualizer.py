@@ -117,8 +117,11 @@ class Visualizer:
         self.add_line(p4, p8)
 
     def add_path(self, order):
+        edge = ORANGE_RADIUS
         for i in range(len(order) - 1):
-            self.add_line(order[i], order[i + 1])
+            p1 = [order[i][1], order[i][0], order[i][2] - edge]
+            p2 = [order[i + 1][1], order[i + 1][0], order[i + 1][2] - edge]
+            self.add_line(p1, p2, color=ORANGE_COLOR)
 
     def get_sphere_by_coordinates(self, z, x, t):
         for element in self.displayed_geometries:
