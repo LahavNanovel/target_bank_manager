@@ -6,8 +6,8 @@ GREEN_COLOR     = [34/255, 139/255, 34/255]
 RED_COLOR       = [255/255, 69/255, 0/255]
 
 # realsense dimensions
-RS_WIDTH = 300
-RS_HEIGHT = 300
+RS_WIDTH = 350
+RS_HEIGHT = 350
 SHIFT_SIZE = 50
 
 ORANGE_RADIUS   = 50        # MM

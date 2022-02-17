@@ -13,7 +13,7 @@ class Sphere:
         self.tPos   = t
         self.radius = radius
         self.color  = color
-        self.mesh_sphere = self.create_mesh_sphere()
+        self.sphere_element = self.create_sphere_element()
 
     def get_x(self):
         return self.xPos
@@ -30,15 +30,80 @@ class Sphere:
         d3 = pow(self.tPos - other.get_t(), 2)
         return math.sqrt(d1 + d2 + d3)
 
-    def create_mesh_sphere(self):
+    def create_sphere_element(self):
         mesh_sphere = o3d.geometry.TriangleMesh.create_sphere(radius=self.radius)
         mesh_sphere.compute_vertex_normals()
         mesh_sphere.translate([self.xPos, self.zPos, self.tPos])
         mesh_sphere.paint_uniform_color(self.color)
         return mesh_sphere
 
-    def get_mesh_sphere(self):
-        return self.mesh_sphere
+    def get_sphere_element(self):
+        return self.sphere_element
+
+
+class Line:
+    def __init__(self, source, destination, color=BLACK_COLOR):
+        self.source = source
+        self.destination = destination
+        self.color = color
+        self.line_element = self.create_line_element()
+
+    def create_line_element(self):
+        line = o3d.geometry.LineSet()
+        line.points = o3d.utility.Vector3dVector([self.source, self.destination])
+        line.lines = o3d.utility.Vector2iVector([[0, 1]])
+        line.colors = o3d.utility.Vector3dVector([self.color])
+        return line
+
+    def get_line_element(self):
+        return self.line_element
+
+
+class BoundingBox:
+    def __init__(self, x_start, z_start, t_min, t_max):
+        self.x_start = x_start
+        self.z_start = z_start
+        self.t_min = t_min
+        self.t_max = t_max
+        self.lines = self.create_bounding_box_lines()
+
+    def create_line(self, source, destination, color=BLACK_COLOR):
+        line = o3d.geometry.LineSet()
+        line.points = o3d.utility.Vector3dVector([source, destination])
+        line.lines = o3d.utility.Vector2iVector([[0, 1]])
+        line.colors = o3d.utility.Vector3dVector([color])
+        return line
+
+    def create_bounding_box_lines(self):
+        window_width = RS_WIDTH
+        window_height = RS_HEIGHT
+        edge = ORANGE_RADIUS
+        # create points
+        p1 = [self.x_start - edge, self.z_start - edge, self.t_min - edge]
+        p2 = [self.x_start + window_width + edge, self.z_start - edge, self.t_min - edge]
+        p3 = [self.x_start - edge, self.z_start + window_height + edge, self.t_min - edge]
+        p4 = [self.x_start + window_width + edge, self.z_start + window_height + edge, self.t_min - edge]
+        p5 = [self.x_start - edge, self.z_start - edge, self.t_max+ edge]
+        p6 = [self.x_start + window_width + edge, self.z_start - edge, self.t_max + edge]
+        p7 = [self.x_start - edge, self.z_start + window_height + edge, self.t_max+ edge]
+        p8 = [self.x_start + window_width + edge, self.z_start + window_height + edge, self.t_max+ edge]
+        lines = [Line(p1, p2),
+                 Line(p1, p2),
+                 Line(p2, p4),
+                 Line(p4, p3),
+                 Line(p3, p1),
+                 Line(p5, p6),
+                 Line(p6, p8),
+                 Line(p8, p7),
+                 Line(p7, p5),
+                 Line(p1, p5),
+                 Line(p2, p6),
+                 Line(p3, p7),
+                 Line(p4, p8)]
+        return lines
+
+    def get_box_lines(self):
+        return self.lines
 
 
 class Visualizer:
@@ -70,7 +135,7 @@ class Visualizer:
 
     def add_sphere(self, coordinates, color=WHITE_COLOR):
         sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
-        self.display_requests.put(sphere.get_mesh_sphere())
+        self.display_requests.put(sphere.get_sphere_element())
 
     def remove_sphere(self, coordinates):
         sphere = self.get_sphere_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
@@ -93,52 +158,28 @@ class Visualizer:
         geometry.paint_uniform_color(color)
         self.vis.update_geometry(geometry)
 
-    def add_line(self, source, destination, color=BLACK_COLOR):
-        line_set = o3d.geometry.LineSet()
-        line_set.points = o3d.utility.Vector3dVector([source, destination])
-        line_set.lines = o3d.utility.Vector2iVector([[0, 1]])
-        line_set.colors = o3d.utility.Vector3dVector([color])
-        self.display_requests.put(line_set)
-
     def add_bounding_box(self, x_start, z_start, t_min, t_max):
-        window_width = RS_WIDTH
-        window_height = RS_HEIGHT
-        edge = ORANGE_RADIUS
-        # create points
-        p1 = [x_start - edge, z_start - edge, t_min - edge]
-        p2 = [x_start + window_width + edge, z_start - edge, t_min - edge]
-        p3 = [x_start - edge, z_start + window_height + edge, t_min - edge]
-        p4 = [x_start + window_width + edge, z_start + window_height + edge, t_min - edge]
-        p5 = [x_start - edge, z_start - edge, t_max+ edge]
-        p6 = [x_start + window_width + edge, z_start - edge, t_max + edge]
-        p7 = [x_start - edge, z_start + window_height + edge, t_max+ edge]
-        p8 = [x_start + window_width + edge, z_start + window_height + edge, t_max+ edge]
-        # connect points by lines
-        self.add_line(p1, p2)
-        self.add_line(p2, p4)
-        self.add_line(p4, p3)
-        self.add_line(p3, p1)
-        self.add_line(p5, p6)
-        self.add_line(p6, p8)
-        self.add_line(p8, p7)
-        self.add_line(p7, p5)
-        self.add_line(p1, p5)
-        self.add_line(p2, p6)
-        self.add_line(p3, p7)
-        self.add_line(p4, p8)
+        bounding_box = BoundingBox(x_start, z_start, t_min, t_max)
+        lines = bounding_box.get_box_lines()
+        for line in lines:
+            self.display_requests.put(line.get_line_element())
+
+    def get_line_by_coordinates(self, z, x, t):
+        # TODO: complete
+        # for element in self.displayed_geometries:
+        #     print(element.get_line_coordinate(0))
+        pass
+
+    def mark_bounding_box(self):
+        pass
 
     def add_path(self, order):
         edge = ORANGE_RADIUS
         for i in range(len(order) - 1):
             p1 = [order[i][1], order[i][0], order[i][2] - edge]
             p2 = [order[i + 1][1], order[i + 1][0], order[i + 1][2] - edge]
-            self.add_line(p1, p2, color=ORANGE_COLOR)
-
-    def get_line_by_coordinates(self, z, x, t):
-        # TODO: complete
-        for element in self.displayed_geometries:
-            print(element.get_line_coordinate(0))
-        pass
+            line = Line(p1, p2, color=ORANGE_COLOR)
+            self.display_requests.put(line.get_line_element())
 
     def extract_spheres_from_dict(self, targets_dict):
         for id in targets_dict.keys():
