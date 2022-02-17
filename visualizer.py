@@ -7,22 +7,13 @@ from constants import *
 
 
 class Sphere:
-    def __init__(self, z, x, t, color, radius):
+    def __init__(self, z, x, t, radius, color=WHITE_COLOR):
         self.zPos   = z
         self.xPos   = x
         self.tPos   = t
         self.radius = radius
         self.color  = color
         self.sphere_element = self.create_sphere_element()
-
-    def get_x(self):
-        return self.xPos
-
-    def get_z(self):
-        return self.zPos
-
-    def get_t(self):
-        return self.tPos
 
     def calculate_distance(self, other):
         d1 = pow(self.xPos - other.get_x(), 2)
@@ -39,6 +30,15 @@ class Sphere:
 
     def get_sphere_element(self):
         return self.sphere_element
+
+    def get_x(self):
+        return self.xPos
+
+    def get_z(self):
+        return self.zPos
+
+    def get_t(self):
+        return self.tPos
 
 
 class Line:
@@ -87,6 +87,7 @@ class BoundingBox:
         p6 = [self.x_start + window_width + edge, self.z_start - edge, self.t_max + edge]
         p7 = [self.x_start - edge, self.z_start + window_height + edge, self.t_max+ edge]
         p8 = [self.x_start + window_width + edge, self.z_start + window_height + edge, self.t_max+ edge]
+        # create lines between points
         lines = [Line(p1, p2),
                  Line(p1, p2),
                  Line(p2, p4),
@@ -105,14 +106,19 @@ class BoundingBox:
     def get_box_lines(self):
         return self.lines
 
+    def get_x_start(self):
+        return self.x_start
+
+    def get_z_start(self):
+        return self.z_start
+
 
 class Visualizer:
     def __init__(self):
         self.is_active = True
         self.displayed_geometries = []
-        self.displayed_spheres = []
-        self.displayed_bounding_boxes = []
-        self.displayed_path = []
+        self.spheres = []
+        self.bounding_boxes = []
         self.display_requests = queue.Queue()
         self.activation_thread = threading.Thread(target=self.create_window)
         self.activation_thread.start()
@@ -134,44 +140,60 @@ class Visualizer:
         self.vis.destroy_window()
 
     def add_sphere(self, coordinates, color=WHITE_COLOR):
-        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], color, ORANGE_RADIUS)
+        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], ORANGE_RADIUS)
+        self.spheres.append(sphere)
         self.display_requests.put(sphere.get_sphere_element())
 
     def remove_sphere(self, coordinates):
         sphere = self.get_sphere_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
-        self.displayed_geometries.remove(sphere)
-        self.vis.remove_geometry(sphere)
-        self.vis.update_geometry(sphere)
+        self.spheres.remove(sphere)
+        self.displayed_geometries.remove(sphere.get_sphere_element())
+        self.vis.remove_geometry(sphere.get_sphere_element())
+        self.vis.update_geometry(sphere.get_sphere_element())
 
     def get_sphere_by_coordinates(self, z, x, t):
-        for element in self.displayed_geometries:
-            center = element.get_center()
+        for sphere in self.spheres:
+            center = sphere.get_sphere_element().get_center()
             if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
-                return element
+                return sphere
         return None
 
     def mark_sphere(self, coordinates, color):
         z = coordinates[0]
         x = coordinates[1]
         t = coordinates[2]
-        geometry = self.get_sphere_by_coordinates(z, x, t)
-        geometry.paint_uniform_color(color)
-        self.vis.update_geometry(geometry)
+        sphere = self.get_sphere_by_coordinates(z, x, t).get_sphere_element()
+        sphere.paint_uniform_color(color)
+        self.vis.update_geometry(sphere)
 
     def add_bounding_box(self, x_start, z_start, t_min, t_max):
         bounding_box = BoundingBox(x_start, z_start, t_min, t_max)
+        self.bounding_boxes.append(bounding_box)
         lines = bounding_box.get_box_lines()
         for line in lines:
             self.display_requests.put(line.get_line_element())
 
-    def get_line_by_coordinates(self, z, x, t):
-        # TODO: complete
-        # for element in self.displayed_geometries:
-        #     print(element.get_line_coordinate(0))
-        pass
+    def get_bounding_box_by_coordinates(self, x_start, z_start):
+        for bounding_box in self.bounding_boxes:
+            if x_start == bounding_box.get_x_start() and z_start == bounding_box.get_z_start():
+                return bounding_box
+        return None
 
-    def mark_bounding_box(self):
-        pass
+    def mark_bounding_box(self, x_start, z_start):
+        bounding_box = self.get_bounding_box_by_coordinates(x_start, z_start)
+        lines = bounding_box.get_box_lines()
+        for line in lines:
+            line_element = line.get_line_element()
+            line_element.colors = o3d.utility.Vector3dVector([RED_COLOR])
+            self.vis.update_geometry(line_element)
+
+    def unmark_bounding_box(self, x_start, z_start):
+        bounding_box = self.get_bounding_box_by_coordinates(x_start, z_start)
+        lines = bounding_box.get_box_lines()
+        for line in lines:
+            line_element = line.get_line_element()
+            line_element.colors = o3d.utility.Vector3dVector([BLACK_COLOR])
+            self.vis.update_geometry(line_element)
 
     def add_path(self, order):
         edge = ORANGE_RADIUS

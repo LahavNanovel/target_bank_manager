@@ -87,26 +87,19 @@ class TargetBankManager:
         else:
             self.visualizer.mark_sphere(coordinates, RED_COLOR)
 
+    def mark_cluster(self, x_start, z_start):
+        self.visualizer.mark_bounding_box(x_start, z_start)
+
+    def unmark_cluster(self, x_start, z_start):
+        self.visualizer.unmark_bounding_box(x_start, z_start)
+
     def add_target(self, coordinates, color=WHITE_COLOR):
-        for cluster in self.clusters:
-            if cluster.is_target_in_range(coordinates):
-                cluster.add_target(coordinates)
+        self.active_cluster.add_target(coordinates)
         self.visualizer.add_sphere(coordinates, color)
 
     def remove_target(self, coordinates):
-        for cluster in self.clusters:
-            if cluster.is_target_in_range(coordinates):
-                cluster.remove_target(coordinates)
+        self.active_cluster.remove_target(coordinates)
         self.visualizer.remove_sphere(coordinates)
-
-    def send_targets_str_to_visualizer(self):
-        for cluster in self.clusters:
-            target_list = cluster.get_target_list()
-            self.visualizer.update_spheres(target_list, WHITE_COLOR)
-            self.visualizer.add_bounding_box(cluster.get_x_start(),
-                                             cluster.get_z_start(),
-                                             cluster.get_min_t(),
-                                             cluster.get_max_t())
 
 
 def singleton(class_):
