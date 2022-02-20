@@ -14,53 +14,9 @@ ranges["z_axis_range"] = 0, 1800
 ranges["x_axis_range"] = 0, 1000
 ranges["t_axis_range"] = 0, 2000
 
-# mark targets.
-def test_1():
-    targets_1 = generate_points([range_1])
-    targets_2 = generate_points([range_2])
-    targets_3 = generate_points([range_3])
-    targets_4 = generate_points([range_4])
-    targets_1 = sorted(targets_1, key=lambda k: [k[2]])
-    targets_2 = sorted(targets_2, key=lambda k: [k[2]])
-    targets_3 = sorted(targets_3, key=lambda k: [k[2]])
-    targets_4 = sorted(targets_4, key=lambda k: [k[2]])
-    targets = targets_1 + targets_2 + targets_3 + targets_4
-    getTargetBankManager().set_targets(targets)
-    time.sleep(10)
-    getTargetBankManager().mark_target(targets_1[0], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_1[0], "picked")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_1[1], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_1[1], "failed")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_2[0], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_2[0], "picked")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_2[1], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_2[1], "picked")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_3[0], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_3[0], "picked")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_3[1], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_3[1], "failed")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_4[0], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_4[0], "picked")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_4[1], "visited")
-    time.sleep(3)
-    getTargetBankManager().mark_target(targets_4[1], "picked")
 
-# mark bounding box
-def test_2():
+# mark bounding boxes and targets
+def test_1():
     targets = generate_points_from_file()
     getTargetBankManager().set_targets(targets)
     num_clusters = getTargetBankManager().get_number_of_clusters()
@@ -71,11 +27,22 @@ def test_2():
         z_start = cluster.get_z_start()
         getTargetBankManager().mark_cluster(x_start, z_start)
         time.sleep(2)
+        targets = cluster.get_target_list()
+        if i == 1:
+            getTargetBankManager().mark_target(targets[0], "visited")
+            time.sleep(2)
+            getTargetBankManager().mark_target(targets[0], "failed")
+            time.sleep(2)
+        else:
+            getTargetBankManager().mark_target(targets[0], "visited")
+            time.sleep(2)
+            getTargetBankManager().mark_target(targets[0], "picked")
+            time.sleep(2)
         getTargetBankManager().unmark_cluster(x_start, z_start)
         time.sleep(2)
 
 # add and remove spheres
-def test_3():
+def test_2():
     targets_1 = generate_points([range_1])
     getTargetBankManager().set_targets(targets_1)
     cluster = getTargetBankManager().get_next_cluster()
@@ -84,13 +51,8 @@ def test_3():
     time.sleep(2)
     getTargetBankManager().remove_target([200, 400, 500])
 
-# generate points from real detection file
-def test_4():
-    targets = generate_points_from_file()
-    getTargetBankManager().set_targets(targets)
-
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
-    t = threading.Thread(target=test_2)
+    t = threading.Thread(target=test_1)
     t.run()

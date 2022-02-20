@@ -1,5 +1,4 @@
 import math
-import json
 import queue
 import threading
 import open3d as o3d
@@ -145,26 +144,31 @@ class Visualizer:
         self.display_requests.put(sphere.get_sphere_element())
 
     def remove_sphere(self, coordinates):
-        sphere = self.get_sphere_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
-        self.spheres.remove(sphere)
-        self.displayed_geometries.remove(sphere.get_sphere_element())
-        self.vis.remove_geometry(sphere.get_sphere_element())
-        self.vis.update_geometry(sphere.get_sphere_element())
+        spheres = self.get_spheres_by_coordinates(coordinates[0], coordinates[1], coordinates[2])
+        for sphere in spheres:
+            self.spheres.remove(sphere)
+            self.displayed_geometries.remove(sphere.get_sphere_element())
+            self.vis.remove_geometry(sphere.get_sphere_element())
+            self.vis.update_geometry(sphere.get_sphere_element())
 
-    def get_sphere_by_coordinates(self, z, x, t):
+    def get_spheres_by_coordinates(self, z, x, t):
+        # there might be more than one sphere with the same coordinates
+        spheres = []
         for sphere in self.spheres:
             center = sphere.get_sphere_element().get_center()
             if abs(z - center[1]) < 0.0001 and abs(x - center[0]) < 0.0001 and abs(t - center[2]) < 0.0001:
-                return sphere
-        return None
+                spheres.append(sphere)
+        return spheres
 
     def mark_sphere(self, coordinates, color):
         z = coordinates[0]
         x = coordinates[1]
         t = coordinates[2]
-        sphere = self.get_sphere_by_coordinates(z, x, t).get_sphere_element()
-        sphere.paint_uniform_color(color)
-        self.vis.update_geometry(sphere)
+        spheres = self.get_spheres_by_coordinates(z, x, t)
+        for sphere in spheres:
+            sphere_element = sphere.get_sphere_element()
+            sphere_element.paint_uniform_color(color)
+            self.vis.update_geometry(sphere_element)
 
     def add_bounding_box(self, x_start, z_start, t_min, t_max):
         bounding_box = BoundingBox(x_start, z_start, t_min, t_max)
@@ -200,19 +204,8 @@ class Visualizer:
         for i in range(len(order) - 1):
             p1 = [order[i][1], order[i][0], order[i][2] - edge]
             p2 = [order[i + 1][1], order[i + 1][0], order[i + 1][2] - edge]
-            line = Line(p1, p2, color=ORANGE_COLOR)
+            line = Line(p1, p2, color=GRAY_COLOR)
             self.display_requests.put(line.get_line_element())
-
-    def extract_spheres_from_dict(self, targets_dict):
-        for id in targets_dict.keys():
-            self.add_sphere(targets_dict[id])
-
-    def extract_bounding_box_from_dict(self, bounding_box_dict):
-        x_start = float(bounding_box_dict["x_start"])
-        z_start = float(bounding_box_dict["z_start"])
-        t_min = float(bounding_box_dict["t_min"])
-        t_max = float(bounding_box_dict["t_max"])
-        self.add_bounding_box(x_start, z_start, t_min, t_max)
 
     def load_viewpoint(self):
         ctr = self.vis.get_view_control()
@@ -223,3 +216,37 @@ class Visualizer:
         param = self.vis.get_view_control().convert_to_pinhole_camera_parameters()
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
         # self.vis.destroy_window()
+
+    # ------------------------------------------------ drawer functions ------------------------------------------------
+
+    def add_bounding_box_from_dict(self, bounding_box_dict):
+        x_start = float(bounding_box_dict["x_start"])
+        z_start = float(bounding_box_dict["z_start"])
+        t_min = float(bounding_box_dict["t_min"])
+        t_max = float(bounding_box_dict["t_max"])
+        self.add_bounding_box(x_start, z_start, t_min, t_max)
+
+    def add_sphere_from_dict(self, sphere_dict):
+        z = float(sphere_dict["z_value"])
+        x = float(sphere_dict["x_value"])
+        t = float(sphere_dict["t_value"])
+        self.add_sphere([z, x, t])
+
+    def remove_sphere_from_dict(self, sphere_dict):
+        z = float(sphere_dict["z_value"])
+        x = float(sphere_dict["x_value"])
+        t = float(sphere_dict["t_value"])
+        self.remove_sphere([z, x, t])
+
+    def add_path_from_dict(self, path_dict):
+        order = path_dict["order"]
+        self.add_path(order)
+
+    def mark_sphere_from_dict(self, mark_sphere_dict):
+        pass
+
+    def mark_bounding_box_from_dict(self, mark_bounding_box_dict):
+        pass
+
+    def unmark_bounding_box_from_dict(self, unmark_bounding_box_dict):
+        pass
