@@ -4,9 +4,6 @@ from path_solver import PathSolver
 from visualizer import Visualizer
 # from cameras.camerasOffset.camerasOffset import getCamerasOffset, CamerasOffset
 
-# ---use order---
-# 1)set range
-# 2)set target list
 
 class TargetBankManager:
     def __init__(self):
@@ -60,6 +57,7 @@ class TargetBankManager:
                                              cluster.get_min_t(),
                                              cluster.get_max_t())
         order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
+        self.sort_clusters_by_order(order)
         self.visualizer.add_path(order)
 
     def get_number_of_targets(self):
@@ -104,7 +102,13 @@ class TargetBankManager:
     def remove_bounding_box(self, x_start, z_start):
         self.visualizer.remove_bounding_box(x_start, z_start)
 
-
+    def sort_clusters_by_order(self, order):
+        sorted_clusters = []
+        for coordinate in order:
+            for cluster in self.clusters:
+                if cluster.get_position() == coordinate:
+                    sorted_clusters.append(cluster)
+        self.clusters = sorted_clusters
 
 
 def singleton(class_):

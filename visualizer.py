@@ -7,7 +7,7 @@ from constants import *
 
 
 class Line:
-    def __init__(self, source, destination, color=GRAY_COLOR):
+    def __init__(self, source, destination, color):
         self.source = source
         self.destination = destination
         self.color = color
@@ -25,7 +25,7 @@ class Line:
 
 
 class Sphere:
-    def __init__(self, z, x, t, radius, color=WHITE_COLOR):
+    def __init__(self, z, x, t, radius, color):
         self.zPos   = z
         self.xPos   = x
         self.tPos   = t
@@ -88,19 +88,19 @@ class BoundingBox:
         p7 = [self.x_start - edge, self.z_start + window_height + edge, self.t_max+ edge]
         p8 = [self.x_start + window_width + edge, self.z_start + window_height + edge, self.t_max+ edge]
         # create lines between points
-        lines = [Line(p1, p2),
-                 Line(p1, p2),
-                 Line(p2, p4),
-                 Line(p4, p3),
-                 Line(p3, p1),
-                 Line(p5, p6),
-                 Line(p6, p8),
-                 Line(p8, p7),
-                 Line(p7, p5),
-                 Line(p1, p5),
-                 Line(p2, p6),
-                 Line(p3, p7),
-                 Line(p4, p8)]
+        lines = [Line(p1, p2, color=GRAY_COLOR),
+                 Line(p1, p2, color=GRAY_COLOR),
+                 Line(p2, p4, color=GRAY_COLOR),
+                 Line(p4, p3, color=GRAY_COLOR),
+                 Line(p3, p1, color=GRAY_COLOR),
+                 Line(p5, p6, color=GRAY_COLOR),
+                 Line(p6, p8, color=GRAY_COLOR),
+                 Line(p8, p7, color=GRAY_COLOR),
+                 Line(p7, p5, color=GRAY_COLOR),
+                 Line(p1, p5, color=GRAY_COLOR),
+                 Line(p2, p6, color=GRAY_COLOR),
+                 Line(p3, p7, color=GRAY_COLOR),
+                 Line(p4, p8, color=GRAY_COLOR)]
         return lines
 
     def get_box_lines(self):
@@ -181,6 +181,7 @@ class Visualizer:
         self.vis.create_window(window_name="x: red | z: green | t: blue")
         self.axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=400, origin=[0, 0, 0])
         self.vis.add_geometry(self.axis)
+        self.load_viewpoint()
         while self.is_active:
             while not self.display_requests.empty():
                 request = self.display_requests.get()
@@ -188,12 +189,13 @@ class Visualizer:
                 self.vis.add_geometry(request)
                 self.vis.poll_events()
                 self.vis.update_renderer()
+                self.save_viewpoint()
             self.vis.poll_events()
             self.vis.update_renderer()
         self.vis.destroy_window()
 
     def add_sphere(self, coordinates, color=WHITE_COLOR):
-        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], ORANGE_RADIUS)
+        sphere = Sphere(coordinates[0], coordinates[1], coordinates[2], ORANGE_RADIUS, color)
         self.spheres.append(sphere)
         self.display_requests.put(sphere.get_sphere_element())
 
