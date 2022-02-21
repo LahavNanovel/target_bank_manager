@@ -79,6 +79,14 @@ class TargetBankManager:
     def get_number_of_clusters(self):
         return len(self.clusters)
 
+    def add_target(self, coordinates, color=WHITE_COLOR):
+        self.active_cluster.add_target(coordinates)
+        self.visualizer.add_sphere(coordinates, color)
+
+    def remove_target(self, coordinates):
+        self.active_cluster.remove_target(coordinates)
+        self.visualizer.remove_sphere(coordinates)
+
     def mark_target(self, coordinates, state):
         if state == "visited":
             self.visualizer.mark_sphere(coordinates, ORANGE_COLOR)
@@ -93,13 +101,10 @@ class TargetBankManager:
     def unmark_cluster(self, x_start, z_start):
         self.visualizer.unmark_bounding_box(x_start, z_start)
 
-    def add_target(self, coordinates, color=WHITE_COLOR):
-        self.active_cluster.add_target(coordinates)
-        self.visualizer.add_sphere(coordinates, color)
+    def remove_bounding_box(self, x_start, z_start):
+        self.visualizer.remove_bounding_box(x_start, z_start)
 
-    def remove_target(self, coordinates):
-        self.active_cluster.remove_target(coordinates)
-        self.visualizer.remove_sphere(coordinates)
+
 
 
 def singleton(class_):

@@ -1,6 +1,6 @@
 import time
 import threading
-
+from constants import *
 from point_generator_for_debug import *
 from target_bank_manager import getTargetBankManager
 
@@ -41,7 +41,7 @@ def test_1():
         getTargetBankManager().unmark_cluster(x_start, z_start)
         time.sleep(2)
 
-# add and remove spheres
+# add and remove
 def test_2():
     targets_1 = generate_points([range_1])
     getTargetBankManager().set_targets(targets_1)
@@ -50,7 +50,8 @@ def test_2():
     getTargetBankManager().add_target([200, 400, 500])
     time.sleep(2)
     getTargetBankManager().remove_target([200, 400, 500])
-
+    time.sleep(2)
+    getTargetBankManager().remove_bounding_box(cluster.get_x_start(), cluster.get_z_start())
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)

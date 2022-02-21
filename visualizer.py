@@ -1,8 +1,27 @@
 import math
 import queue
 import threading
+import numpy as np
 import open3d as o3d
 from constants import *
+
+
+class Line:
+    def __init__(self, source, destination, color=GRAY_COLOR):
+        self.source = source
+        self.destination = destination
+        self.color = color
+        self.line_element = self.create_line_element()
+
+    def create_line_element(self):
+        line = o3d.geometry.LineSet()
+        line.points = o3d.utility.Vector3dVector([self.source, self.destination])
+        line.lines = o3d.utility.Vector2iVector([[0, 1]])
+        line.colors = o3d.utility.Vector3dVector([self.color])
+        return line
+
+    def get_line_element(self):
+        return self.line_element
 
 
 class Sphere:
@@ -38,24 +57,6 @@ class Sphere:
 
     def get_t(self):
         return self.tPos
-
-
-class Line:
-    def __init__(self, source, destination, color=BLACK_COLOR):
-        self.source = source
-        self.destination = destination
-        self.color = color
-        self.line_element = self.create_line_element()
-
-    def create_line_element(self):
-        line = o3d.geometry.LineSet()
-        line.points = o3d.utility.Vector3dVector([self.source, self.destination])
-        line.lines = o3d.utility.Vector2iVector([[0, 1]])
-        line.colors = o3d.utility.Vector3dVector([self.color])
-        return line
-
-    def get_line_element(self):
-        return self.line_element
 
 
 class BoundingBox:
@@ -112,6 +113,59 @@ class BoundingBox:
         return self.z_start
 
 
+class Arrow:
+    def __init__(self, start, end, color):
+        self.start = start
+        self.end = end
+        self.color = color
+        self.arrow_element = self.create_arrow_element()
+
+    def get_cross_prod_mat(self, p_vec_arr):
+        q_cross_prod_mat = np.array([
+            [0, -p_vec_arr[2], p_vec_arr[1]],
+            [p_vec_arr[2], 0, -p_vec_arr[0]],
+            [-p_vec_arr[1], p_vec_arr[0], 0],
+        ])
+        return q_cross_prod_mat
+
+    def caculate_align_mat(self, p_vec_arr):
+        scale = np.linalg.norm(p_vec_arr)
+        p_vec_arr = p_vec_arr / scale
+        z_unit_arr = np.array([0, 0, 1])
+        z_mat = self.get_cross_prod_mat(z_unit_arr)
+
+        z_c_vec = np.matmul(z_mat, p_vec_arr)
+        z_c_vec_mat = self.get_cross_prod_mat(z_c_vec)
+
+        if np.dot(z_unit_arr, p_vec_arr) == -1:
+            q_trans_mat = -np.eye(3, 3)
+        elif np.dot(z_unit_arr, p_vec_arr) == 1:
+            q_trans_mat = np.eye(3, 3)
+        else:
+            q_trans_mat = np.eye(3, 3) + z_c_vec_mat + np.matmul(z_c_vec_mat,
+                                                                z_c_vec_mat) / (1 + np.dot(z_unit_arr, p_vec_arr))
+
+        return q_trans_mat
+
+    def create_arrow_element(self):
+        vec_arr = np.array(self.end) - np.array(self.start)
+        vec_len = np.linalg.norm(vec_arr)
+        mesh_arrow = o3d.geometry.TriangleMesh.create_arrow(
+            cone_radius=10,
+            cone_height=25,
+            cylinder_radius=2,
+            cylinder_height=vec_len - 30)
+        mesh_arrow.paint_uniform_color(self.color)
+        mesh_arrow.compute_vertex_normals()
+        rot_mat = self.caculate_align_mat(vec_arr)
+        mesh_arrow.rotate(rot_mat, center=np.array([0, 0, 0]))
+        mesh_arrow.translate(np.array(self.start))
+        return mesh_arrow
+
+    def get_arrow_element(self):
+        return self.arrow_element
+
+
 class Visualizer:
     def __init__(self):
         self.is_active = True
@@ -125,7 +179,7 @@ class Visualizer:
     def create_window(self):
         self.vis = o3d.visualization.Visualizer()
         self.vis.create_window(window_name="x: red | z: green | t: blue")
-        self.axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=500, origin=[0, 0, 0])
+        self.axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=400, origin=[0, 0, 0])
         self.vis.add_geometry(self.axis)
         while self.is_active:
             while not self.display_requests.empty():
@@ -170,12 +224,31 @@ class Visualizer:
             sphere_element.paint_uniform_color(color)
             self.vis.update_geometry(sphere_element)
 
+    def unmark_sphere(self, coordinates):
+        z = coordinates[0]
+        x = coordinates[1]
+        t = coordinates[2]
+        spheres = self.get_spheres_by_coordinates(z, x, t)
+        for sphere in spheres:
+            sphere_element = sphere.get_sphere_element()
+            sphere_element.paint_uniform_color(WHITE_COLOR)
+            self.vis.update_geometry(sphere_element)
+
     def add_bounding_box(self, x_start, z_start, t_min, t_max):
         bounding_box = BoundingBox(x_start, z_start, t_min, t_max)
         self.bounding_boxes.append(bounding_box)
         lines = bounding_box.get_box_lines()
         for line in lines:
             self.display_requests.put(line.get_line_element())
+
+    def remove_bounding_box(self, x_start, z_start):
+        bounding_box = self.get_bounding_box_by_coordinates(x_start, z_start)
+        lines = bounding_box.get_box_lines()
+        for line in lines:
+            line_element = line.get_line_element()
+            self.vis.remove_geometry(line_element)
+            self.vis.update_geometry(line_element)
+        self.bounding_boxes.remove(bounding_box)
 
     def get_bounding_box_by_coordinates(self, x_start, z_start):
         for bounding_box in self.bounding_boxes:
@@ -188,7 +261,7 @@ class Visualizer:
         lines = bounding_box.get_box_lines()
         for line in lines:
             line_element = line.get_line_element()
-            line_element.colors = o3d.utility.Vector3dVector([RED_COLOR])
+            line_element.colors = o3d.utility.Vector3dVector([BLACK_COLOR])
             self.vis.update_geometry(line_element)
 
     def unmark_bounding_box(self, x_start, z_start):
@@ -196,7 +269,7 @@ class Visualizer:
         lines = bounding_box.get_box_lines()
         for line in lines:
             line_element = line.get_line_element()
-            line_element.colors = o3d.utility.Vector3dVector([BLACK_COLOR])
+            line_element.colors = o3d.utility.Vector3dVector([GRAY_COLOR])
             self.vis.update_geometry(line_element)
 
     def add_path(self, order):
@@ -204,8 +277,8 @@ class Visualizer:
         for i in range(len(order) - 1):
             p1 = [order[i][1], order[i][0], order[i][2] - edge]
             p2 = [order[i + 1][1], order[i + 1][0], order[i + 1][2] - edge]
-            line = Line(p1, p2, color=GRAY_COLOR)
-            self.display_requests.put(line.get_line_element())
+            arrow = Arrow(p1, p2, color=DARK_CYAN_COLOR)
+            self.display_requests.put(arrow.get_arrow_element())
 
     def load_viewpoint(self):
         ctr = self.vis.get_view_control()
