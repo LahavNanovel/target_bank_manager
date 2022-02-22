@@ -44,10 +44,20 @@ class TargetBankManager:
         # return in_range
         return points
 
+    def sort_clusters_by_order(self, order):
+        sorted_clusters = []
+        for coordinate in order:
+            for cluster in self.clusters:
+                if cluster.get_position() == coordinate:
+                    sorted_clusters.append(cluster)
+        self.clusters = sorted_clusters
+
     def set_targets(self, targets):
         targets = self.filter_out_of_range_points(targets)
         self.cluster_creator.set_targets(targets)
         self.clusters = self.cluster_creator.select_clusters()
+        order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
+        self.sort_clusters_by_order(order)
         for cluster in self.clusters:
             target_list = cluster.get_target_list()
             for target in target_list:
@@ -56,8 +66,6 @@ class TargetBankManager:
                                              cluster.get_z_start(),
                                              cluster.get_min_t(),
                                              cluster.get_max_t())
-        order = self.path_solver.get_path(self.clusters, method="bottom_to_top")
-        self.sort_clusters_by_order(order)
         self.visualizer.add_path(order)
 
     def get_number_of_targets(self):
@@ -101,14 +109,6 @@ class TargetBankManager:
 
     def remove_bounding_box(self, x_start, z_start):
         self.visualizer.remove_bounding_box(x_start, z_start)
-
-    def sort_clusters_by_order(self, order):
-        sorted_clusters = []
-        for coordinate in order:
-            for cluster in self.clusters:
-                if cluster.get_position() == coordinate:
-                    sorted_clusters.append(cluster)
-        self.clusters = sorted_clusters
 
 
 def singleton(class_):

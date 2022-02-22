@@ -124,8 +124,7 @@ class Arrow:
         q_cross_prod_mat = np.array([
             [0, -p_vec_arr[2], p_vec_arr[1]],
             [p_vec_arr[2], 0, -p_vec_arr[0]],
-            [-p_vec_arr[1], p_vec_arr[0], 0],
-        ])
+            [-p_vec_arr[1], p_vec_arr[0], 0]])
         return q_cross_prod_mat
 
     def caculate_align_mat(self, p_vec_arr):
@@ -133,17 +132,16 @@ class Arrow:
         p_vec_arr = p_vec_arr / scale
         z_unit_arr = np.array([0, 0, 1])
         z_mat = self.get_cross_prod_mat(z_unit_arr)
-
         z_c_vec = np.matmul(z_mat, p_vec_arr)
         z_c_vec_mat = self.get_cross_prod_mat(z_c_vec)
-
         if np.dot(z_unit_arr, p_vec_arr) == -1:
             q_trans_mat = -np.eye(3, 3)
         elif np.dot(z_unit_arr, p_vec_arr) == 1:
             q_trans_mat = np.eye(3, 3)
         else:
-            q_trans_mat = np.eye(3, 3) + z_c_vec_mat + np.matmul(z_c_vec_mat,
-                                                                z_c_vec_mat) / (1 + np.dot(z_unit_arr, p_vec_arr))
+            q_trans_mat = np.eye(3, 3)\
+                          + z_c_vec_mat\
+                          + np.matmul(z_c_vec_mat, z_c_vec_mat) / (1 + np.dot(z_unit_arr, p_vec_arr))
 
         return q_trans_mat
 
@@ -292,14 +290,7 @@ class Visualizer:
         o3d.io.write_pinhole_camera_parameters('viewpoint.json', param)
         # self.vis.destroy_window()
 
-    # ------------------------------------------------ drawer functions ------------------------------------------------
-
-    def add_bounding_box_from_dict(self, bounding_box_dict):
-        x_start = float(bounding_box_dict["x_start"])
-        z_start = float(bounding_box_dict["z_start"])
-        t_min = float(bounding_box_dict["t_min"])
-        t_max = float(bounding_box_dict["t_max"])
-        self.add_bounding_box(x_start, z_start, t_min, t_max)
+    # ---------------------------------------------- subscriber functions ----------------------------------------------
 
     def add_sphere_from_dict(self, sphere_dict):
         z = float(sphere_dict["z_value"])
@@ -313,15 +304,41 @@ class Visualizer:
         t = float(sphere_dict["t_value"])
         self.remove_sphere([z, x, t])
 
+    def mark_sphere_from_dict(self, sphere_dict):
+        z = float(sphere_dict["z_value"])
+        x = float(sphere_dict["x_value"])
+        t = float(sphere_dict["t_value"])
+        color = sphere_dict["color"]
+        self.mark_sphere([z, x, t], color)
+
+    def unmark_sphere_from_dict(self, sphere_dict):
+        z = float(sphere_dict["z_value"])
+        x = float(sphere_dict["x_value"])
+        t = float(sphere_dict["t_value"])
+        self.remove_sphere([z, x, t])
+
+    def add_bounding_box_from_dict(self, bounding_box_dict):
+        x_start = float(bounding_box_dict["x_start_value"])
+        z_start = float(bounding_box_dict["z_start_value"])
+        t_min = float(bounding_box_dict["t_min_value"])
+        t_max = float(bounding_box_dict["t_max_value"])
+        self.add_bounding_box(x_start, z_start, t_min, t_max)
+
+    def remove_bounding_box_from_dict(self, bounding_box_dict):
+        x_start = float(bounding_box_dict["x_start_value"])
+        z_start = float(bounding_box_dict["z_start_value"])
+        self.remove_bounding_box(x_start, z_start)
+
+    def mark_bounding_box_from_dict(self, bounding_box_dict):
+        x_start = float(bounding_box_dict["x_start_value"])
+        z_start = float(bounding_box_dict["z_start_value"])
+        self.mark_bounding_box(x_start, z_start)
+
+    def unmark_bounding_box_from_dict(self, bounding_box_dict):
+        x_start = float(bounding_box_dict["x_start_value"])
+        z_start = float(bounding_box_dict["z_start_value"])
+        self.unmark_bounding_box(x_start, z_start)
+
     def add_path_from_dict(self, path_dict):
         order = path_dict["order"]
         self.add_path(order)
-
-    def mark_sphere_from_dict(self, mark_sphere_dict):
-        pass
-
-    def mark_bounding_box_from_dict(self, mark_bounding_box_dict):
-        pass
-
-    def unmark_bounding_box_from_dict(self, unmark_bounding_box_dict):
-        pass

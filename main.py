@@ -1,6 +1,5 @@
 import time
 import threading
-from constants import *
 from point_generator_for_debug import *
 from target_bank_manager import getTargetBankManager
 
@@ -52,6 +51,7 @@ def test_2():
     getTargetBankManager().remove_target([200, 400, 500])
     time.sleep(2)
     getTargetBankManager().remove_bounding_box(cluster.get_x_start(), cluster.get_z_start())
+
 
 if __name__ == "__main__":
     getTargetBankManager().set_motor_range(ranges)
